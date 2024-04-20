@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image";
 import Link from "next/link";
 import { Button, Grid, GridItem, VStack } from "@chakra-ui/react";
 import { chakra } from "@chakra-ui/react";

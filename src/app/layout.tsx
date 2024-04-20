@@ -1,12 +1,11 @@
 "use client"
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ChakraProvider } from "@chakra-ui/react";
 import { useReducer } from "react";
-import appReducer from "../logic/reducer";
-import { EMPTY_APP_CONTEXT } from "../logic/reducer";
-import { AppContext, AppDispatchContext } from "../contexts/AppContext"
+import appReducer from "@/logic/reducer";
+import { EMPTY_APP_CONTEXT } from "@/logic/reducer";
+import { AppContext, AppDispatchContext } from "@/contexts/AppContext"
 const inter = Inter({ subsets: ["latin"] });
 export default function RootLayout({
   children,
