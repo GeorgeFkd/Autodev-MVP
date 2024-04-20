@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import "../types/types"
 import { Button, Grid, GridItem, VStack } from "@chakra-ui/react";
 import { chakra } from "@chakra-ui/react";
 export default function Home() {
