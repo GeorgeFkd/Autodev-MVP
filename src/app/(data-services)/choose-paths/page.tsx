@@ -22,6 +22,7 @@ function ChoosePathsPage() {
     const handleSubmit = () => {
         console.log("Handling submit")
         const userSelectedPaths = appState?.selectedApiData.filter(apiPath => checkedVals.includes(apiPath.identification))
+        //@ts-expect-error
         dispatch({ type: "set-api-data", payload: userSelectedPaths })
         router.push("/set-paths-metadata")
         //reroute him to the next page

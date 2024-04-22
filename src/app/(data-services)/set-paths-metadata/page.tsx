@@ -30,6 +30,7 @@ function SetPathsMetadataPage() {
         frequencies.forEach((val, index) => {
             updatedSelectedData[index].frequency = fromStringGetFreq(val)
         })
+        //@ts-expect-error
         dispatch({ type: "set-api-data", payload: updatedSelectedData })
         router.push("/connect-with-layouts")
         console.log("Updated data is: ", appState?.selectedApiData)

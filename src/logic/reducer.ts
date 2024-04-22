@@ -7,7 +7,7 @@ interface AppAction<T> {
     payload: T;
 }
 
-type setUrlAction = AppAction<OpenAPIUrl | GeneralWebsiteUrl>;
+export type setUrlAction = AppAction<OpenAPIUrl | GeneralWebsiteUrl>;
 type addSelectedApiDataAction = AppAction<ApiData>;
 //this will also be used to edit the frequency for data
 type editSelectedApiDataAction = AppAction<ApiData>;
@@ -33,7 +33,9 @@ export default function appReducer(app: AppContext, action: AllActions): AppCont
     }
 
     if (action.type == "set-api-data") {
+        //@ts-expect-error
         const payloadFetched: DataFromOpenAPIUrl[] = action.payload;
+        //@ts-expect-error
         const apiDataWithoutMetadata: SelectedApiData = payloadFetched.map(o => ({ ...o, frequency: null, range: null }))
         return {
             ...app,

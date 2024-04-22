@@ -25,6 +25,7 @@ function FillDataSourcesPage() {
                 return val.json()
             }).then(val => {
                 console.log("Object val: ", val);
+                //@ts-expect-error
                 dispatch({ type: "set-api-data", payload: val })
                 router.push("/choose-paths")
                 setValidationState(OASValidationResult.Success)

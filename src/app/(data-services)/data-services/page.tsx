@@ -26,6 +26,7 @@ function DataServicesPage() {
             return;
         }
         console.log("Submitting URL: ", userInp)
+        //@ts-expect-error
         dispatch({ type: "set-url", payload: userInp })
         //go to another page
         router.push("create-data-service")
