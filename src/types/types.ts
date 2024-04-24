@@ -3,10 +3,10 @@ export type OpenAPIUrl = string;
 export type GeneralWebsiteUrl = string;
 
 export enum StatisticalGraphType {
-    ScatterPlot = "scatterplot",
-    PieChart = "piechart",
-    BarGraph = "bargraph",
-    Histogram = "histogram",
+    ScatterPlot = "Scatterplot",
+    PieChart = "Piechart",
+    BarGraph = "Bargraph",
+    Histogram = "Histogram",
 
 }
 
@@ -24,6 +24,7 @@ export enum Frequency {
     Quarterly = "quarterly",
     Yearly = "yearly",
 }
+
 
 export interface TimeRange {
     from: Date
