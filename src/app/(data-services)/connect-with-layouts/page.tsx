@@ -98,7 +98,7 @@ function AssociateDataSourcesWithLayoutsPage() {
 
             })}
             <Button w="65%" alignSelf="center" onClick={addRow}>Add Row</Button>
-            <Button w="35%" position="fixed" bottom="1rem" right="1rem" colorScheme='blue'>Submit</Button>
+            <Button w="35%" onClick={handleSubmit} position="fixed" bottom="1rem" right="1rem" colorScheme='blue'>Submit</Button>
         </Flex>
     )
 }
@@ -156,33 +156,43 @@ interface EditableSpanProps {
 }
 function EditableSpan({ setText, text }: EditableSpanProps) {
     const [isBeingEdited, setIsBeingEdited] = React.useState(false);
+    const [editedText, setEditedText] = React.useState(text);
     const ref = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {
-        if (isBeingEdited) {
-            if (ref.current !== null) {
-                ref.current.focus()
-            }
+        if (isBeingEdited && ref.current !== null) {
+            ref.current.focus()
         }
     }, [isBeingEdited]);
+
+    const handleChange = (inp: string) => {
+        setEditedText(inp);
+    }
+
+    const handleBlur = () => {
+        setIsBeingEdited(false);
+        setText(editedText);
+    }
+
     return <chakra.div p="1rem" w="70%">
-        <chakra.input id={text} type="text" value={text} onChange={(e) => setText(e.target.value)} onBlur={(e) => setIsBeingEdited(false)}
+        {isBeingEdited ? <input type="text" value={editedText} onChange={(e) => handleChange(e.target.value)} onBlur={handleBlur}
             ref={ref}
-            p="0.75rem"
+            autoFocus
             style={{
                 display: `${isBeingEdited ? "" : "none"}`,
                 width: "70%",
                 font: "inherit",
-            }} />
+            }} /> : <chakra.span onDoubleClick={() => setIsBeingEdited(true)} onClick={() => setIsBeingEdited(true)} textDecoration={"underline"} style={{
+                display: `${isBeingEdited ? "none" : ""}`,
+                cursor: "pointer",
+                width: "70%",
+            }}>
+            {editedText}
 
-        <chakra.span onClick={() => setIsBeingEdited(true)} textDecoration={"underline"} style={{
-            display: `${isBeingEdited ? "none" : ""}`,
-            cursor: "pointer",
-            width: "70%",
-        }}>
-            {text}
+        </chakra.span>}
 
-        </chakra.span>
+
+
     </chakra.div>
 
 }

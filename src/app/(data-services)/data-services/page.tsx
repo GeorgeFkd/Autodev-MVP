@@ -1,8 +1,9 @@
 "use client"
 import React, { useState } from 'react'
-import { Grid, GridItem, Input, Button, VStack, Box } from '@chakra-ui/react'
+import { chakra, Grid, GridItem, Input, Button, VStack, Box, Flex } from '@chakra-ui/react'
 import { useAppContext, useDispatch } from '@/contexts/AppContext'
 import { useRouter } from 'next/navigation'
+import Container from '@/components/Container'
 const templateAreas = `
     "side" "input" "rest"
     "side" "input" "rest"
@@ -11,6 +12,18 @@ const templateAreas = `
 
 const templateRows = "1fr 1fr 1fr"
 const templateColumns = "1fr 1fr 1fr"
+
+function isUrlLike(url: string) {
+    try {
+        new URL(url)
+    } catch (_) {
+        return false;
+    }
+    return true;
+}
+
+
+const CREATE_DATA_SERVICE_URL = "create-data-service"
 function DataServicesPage() {
     const appState = useAppContext();
     const dispatch = useDispatch();
@@ -18,41 +31,24 @@ function DataServicesPage() {
     const [urlInput, setUrlInput] = useState("https://www1.aade.gr/aadeapps3/posApi/rest/openapi.json")
     function handleUrlSubmit(userInp: string) {
         //check if it is actually a URL
-        let url;
-        try {
-            url = new URL(userInp)
-        } catch (_) {
-            console.log("User gave an invalid url")
-            return;
-        }
+        if (!isUrlLike(userInp)) { return; }
         console.log("Submitting URL: ", userInp)
         //@ts-expect-error
         dispatch({ type: "set-url", payload: userInp })
         //go to another page
-        router.push("create-data-service")
+        router.push(CREATE_DATA_SERVICE_URL)
         console.log("Current state is: ", appState?.inputUrl)
     }
-
-
-    //templateAreas={templateAreas} templateRows={templateRows} templateColumns={templateColumns}
     //https://www1.aade.gr/aadeapps3/posApi/rest/openapi.json
     return (
-        <Grid w={"100vw"} placeItems={"center"} h="100vh" >
-            <VStack>
-                <GridItem>
-                    <Input variant="outline" type="url" value={urlInput} placeholder='Input OAS Url here' onChange={e => setUrlInput(e.target.value)} />
-                </GridItem>
-                <GridItem>
-                    <Button onClick={() => handleUrlSubmit(urlInput)}>Submit</Button>
-                </GridItem>
-                <GridItem>
-                    <Box>Url is: {appState?.inputUrl}</Box>
-                </GridItem>
-            </VStack>
-
-
-        </Grid>
-
+        <Container>
+            <Flex flexDir="column" rowGap="2.5rem">
+                <chakra.h1 fontSize={"1.6rem"} fontWeight={"bold"}>Submit an OpenAPI Specification URL(json)</chakra.h1>
+                <Input variant="outline" type="url" value={urlInput} placeholder='Input OAS Url here' onChange={e => setUrlInput(e.target.value)} />
+                <Button onClick={() => handleUrlSubmit(urlInput)}>Submit</Button>
+                <Box>Url currently is: {appState?.inputUrl}</Box>
+            </Flex>
+        </Container>
     )
 }
 

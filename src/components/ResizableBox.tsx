@@ -11,11 +11,10 @@ interface ResizableBoxProps {
 }
 
 function ResizableBox({ width, height, setWidth, setHeight, children }: ResizableBoxProps) {
-    // const [width, setWidth] = useState(100);
     console.log("Rerendering")
-    // const [height, setHeight] = useState(100);
     useEffect(() => {
         const handleResize = () => {
+            console.log("Setting new width and height")
             setWidth(window.innerWidth);
             setHeight(window.innerHeight);
         }
@@ -23,10 +22,16 @@ function ResizableBox({ width, height, setWidth, setHeight, children }: Resizabl
         return () => {
             window.removeEventListener('resize', handleResize);
         }
-    })
+    }, [])
+
+    const handleMouseDown = () => {
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+    };
 
     const handleMouseMove = (event: MouseEvent) => {
         if (event.buttons === 1) {
+            console.log("Setting new width and height")
             setWidth(event.clientX);
             setHeight(event.clientY);
         }
@@ -37,14 +42,9 @@ function ResizableBox({ width, height, setWidth, setHeight, children }: Resizabl
         window.removeEventListener('mouseup', handleMouseUp);
     };
 
-    const handleMouseDown = () => {
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-    };
-
 
     return (
-        <chakra.div resize={"both"} border="3px solid green" w={width} h={height} overflow={"hidden"}>{children}</chakra.div>
+        <chakra.div onMouseUp={handleMouseUp} onMouseDown={handleMouseDown} resize={"both"} border="3px solid green" w={width} h={height} overflow={"hidden"}>{children}</chakra.div>
     )
 }
 

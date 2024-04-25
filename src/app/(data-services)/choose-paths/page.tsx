@@ -1,6 +1,7 @@
 "use client"
+import Container from '@/components/Container';
 import { useAppContext, useDispatch } from '@/contexts/AppContext'
-import { Button, Checkbox, Flex, VStack, chakra } from '@chakra-ui/react';
+import { Button, Checkbox, Flex, VStack, chakra, Grid } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
@@ -11,12 +12,10 @@ function ChoosePathsPage() {
     const router = useRouter();
     const handleChecked = (id: string) => {
         if (checkedVals.includes(id)) {
-            //remove it
             setCheckedVals(prev => prev.filter(i => i !== id))
-        } else {
-            setCheckedVals(prev => [...prev, id])
-            //add it
+            return;
         }
+        setCheckedVals(prev => [...prev, id])
     }
 
     const handleSubmit = () => {
@@ -25,7 +24,6 @@ function ChoosePathsPage() {
         //@ts-expect-error
         dispatch({ type: "set-api-data", payload: userSelectedPaths })
         router.push("/set-paths-metadata")
-        //reroute him to the next page
     }
 
 
@@ -35,9 +33,9 @@ function ChoosePathsPage() {
     console.log("Checked Paths are: ", checkedVals)
     console.log("Paths are: ", appState.selectedApiData)
     return (
-        <Flex w="100vw" h="100vh" rowGap="1rem" justifyContent={"center"} paddingTop="1rem" flexDir={"column"}>
+        <Container>
             <chakra.h1 fontSize={"1.8rem"}>From the URL you provided you have access to the following functionalities:</chakra.h1>
-            <VStack px="2.5rem" spacing={"1rem"}>
+            <Flex px="2.5rem" rowGap={"1rem"} flexDir={"column"}>
                 {appState.selectedApiData.map(apiData => {
                     return <Flex py="0.5rem" px="1rem" w="100%" key={apiData.identification} columnGap={"1.5rem"} border="solid black 1px">
                         <chakra.span fontWeight={"bold"}>Description: <chakra.span fontWeight={"initial"}>{apiData.description}</chakra.span></chakra.span>
@@ -45,10 +43,10 @@ function ChoosePathsPage() {
                         <Checkbox colorScheme='green' onChange={(e) => handleChecked(apiData.identification)}>Include</Checkbox>
                     </Flex>
                 })}
-            </VStack>
+            </Flex>
             <Button size={"lg"} alignSelf={"center"} onClick={(e) => handleSubmit()}>Submit</Button>
 
-        </Flex>
+        </Container>
     )
 }
 
