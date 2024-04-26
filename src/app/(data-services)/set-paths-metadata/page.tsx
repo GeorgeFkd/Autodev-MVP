@@ -35,13 +35,13 @@ function SetPathsMetadataPage() {
     const router = useRouter();
     //to be able to handle both the time range and the frequency
     const [pathsMetadata, setPathsMetadata] = useState<MetadataForData[]>([]);
-    const [frequencies, _] = useState<string[]>([]);
     if (!appState?.selectedApiData) {
         return "Something went wrong"
     }
 
     const handleMetadataChange = (index: number, metadata: Partial<MetadataForData>) => {
         //i could extract sth like this to a hook
+        console.log("Metadata adding: ", metadata)
         setPathsMetadata(prev => {
             const newArr = [...prev]
             newArr[index] = { ...newArr[index], ...metadata }
@@ -52,12 +52,13 @@ function SetPathsMetadataPage() {
 
 
     const addMetaDataToApi = () => {
-        const updatedSelectedData = appState?.selectedApiData;
+        const updatedSelectedData: ApiData[] = appState?.selectedApiData;
+        console.log("Paths Metadata: ", pathsMetadata)
         pathsMetadata.forEach((metadata, index) => {
             updatedSelectedData[index] = { ...updatedSelectedData[index], ...metadata }
         })
         //@ts-expect-error
-        dispatch({ type: "set-api-data", payload: updatedSelectedData })
+        dispatch({ type: "set-api-data-with-metadata", payload: updatedSelectedData })
         router.push("/connect-with-layouts")
         console.log("Updated data is: ", appState?.selectedApiData)
 
@@ -116,6 +117,8 @@ function ApiPathComponent({ data, handleChange, labelFrequency, labelToTime, lab
     const [fromDate, setFromDate] = useState<string>(DEFAULT_TIME_RANGE.from.toDateString());
     const [toDate, setToDate] = useState<string>(DEFAULT_TIME_RANGE.to.toDateString());
 
+    //sth goes wrong here  
+    //range and frequency remain null 
     const setDates = () => {
         handleChange(index, { range: { from: new Date(fromDate), to: new Date(toDate) } })
     }

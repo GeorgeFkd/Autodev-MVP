@@ -34,6 +34,7 @@ export interface TimeRange {
 export interface MetadataForData {
     frequency?: Frequency
     range?: TimeRange
+    graph?: StatisticalGraphType
 }
 export type ApiData = (DataFromOpenAPIUrl & MetadataForData)
 export type SelectedApiData = ApiData[]
@@ -51,11 +52,10 @@ export interface Layout {
     components: ComponentsInGrid;
 }
 
-export interface LabeledApiData {
+export interface ApiDataComponent {
     data: ApiData,
-    label: string,
+    componentName: string,
 }
-export type AssociateComponentWithData = Record<string, LabeledApiData>
 // let metadata: MetadataForData = { frequency: Frequency.Daily, range: { from: null, to: null } }
 // let apiData: DataFromOpenAPIUrl = { description: "Fetches pets from the pet store", identification: "getPetsById" }
 // let all: LabeledApiData = { data: { ...metadata, ...apiData }, label: "Hello World" }
@@ -66,7 +66,7 @@ export type AssociateComponentWithData = Record<string, LabeledApiData>
 
 export interface Page {
     layout: Layout,
-    associatedData: AssociateComponentWithData[],
+    associatedData: ApiDataComponent[],
     pageName: string
 }
 

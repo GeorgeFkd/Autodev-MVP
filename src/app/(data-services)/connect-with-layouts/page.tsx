@@ -1,7 +1,8 @@
 "use client"
+import ModalUserOption from '@/components/ModalUserOption';
 import ResizableBox from '@/components/ResizableBox';
 import { useAppContext, useDispatch } from '@/contexts/AppContext'
-import { StatisticalGraphType } from '@/types/types';
+import { ApiData, ApiDataComponent, Layout, Page, StatisticalGraphType } from '@/types/types';
 import { ChevronDownIcon, PlusSquareIcon } from '@chakra-ui/icons';
 import { chakra, Button, Flex, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import React, { useState } from 'react'
@@ -26,15 +27,19 @@ interface Row {
 const defaultBox = { width: 450, height: 450, position: 0, dataSource: "", graphType: StatisticalGraphType.BarGraph, label: "Label" }
 function AssociateDataSourcesWithLayoutsPage() {
     const [rows, setRows] = useState<Row[]>([{ boxes: [defaultBox], id: 0 }]);
-    const [selectedDataSources, setSelectedDataSources] = useState<string[]>([]);
+    const [pageName, setPageName] = useState<string>("Page 1");
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const appState = useAppContext();
-    const availableOptions = appState?.selectedApiData?.map(apiData => apiData.description).filter(e => !selectedDataSources.includes(e)) ?? [];
+    const alreadySelected = rows.map(row => row.boxes.map(box => box.dataSource)).flat();
+    const availableOptions = appState?.selectedApiData?.map(apiData => apiData.description).filter(e => !alreadySelected.includes(e)) ?? [];
     //the menu should only have the non selected options
     const dispatch = useDispatch();
 
     if (!appState?.selectedApiData) {
         return "something went wrong"
     }
+
+    console.log("App State for pages is: ", appState.pages)
 
 
     const changeBox = (rowId: number, boxId: number, newBox: Partial<Box>) => {
@@ -64,19 +69,85 @@ function AssociateDataSourcesWithLayoutsPage() {
         setRows(newRows);
     }
 
-    const handleSubmit = () => {
+    const savePage = () => {
         console.log("Submitting the following Data: ", rows);
+        const componentNames = rows.map(row => row.boxes.map(box => box.label)).flat();
+        const templateAreas = rows.map(row => row.boxes.map(box => box.label)).map(row => `"${row.join(" ")}"`);
+        const columnsLength = Math.max(...rows.map(row => row.boxes.length));
+        const rowsLength = rows.length;
+        const gridColumns = Array(columnsLength).fill("1fr").join(" ");
+        const gridRows = Array(rowsLength).fill("1fr").join(" ");
+        const layout: Layout = {
+            columns: gridColumns,
+            rows: gridRows,
+            areas: templateAreas,
+            components: componentNames,
+        }
+        const apiDataComponents: ApiDataComponent[] = rows.map(row => row.boxes.map(box => {
+            const data = appState.selectedApiData.find(apiData => apiData.description === box.dataSource) as ApiData;
+            data.graph = box.graphType;
+            return { data, componentName: box.label }
+        })).flat();
+        const page: Page = { layout, pageName, associatedData: apiDataComponents }
+        //@ts-expect-error
+        dispatch({ type: "add-page-with-layout", payload: page })
+    }
 
+    const goToNewPage = () => {
+        //this has plenty of logic problems
+        //i cannot change between pages
+        console.log("Creating new Page")
+        setRows([]);
+        setPageName(prev => "New Page");
+    }
+
+    const showModalForUserAction = () => {
+        console.log("User has finished with all pages")
+        setIsModalOpen(true);
+    }
+
+    const sendEmail = () => {
+        console.log("Sending Email")
+        fetch("/api/create-requirements-file", {
+            method: "POST",
+            body: JSON.stringify(appState),
+        }).then((response) => {
+            if (response.ok) {
+                console.log("Email sent")
+            } else {
+                console.error("Error sending email")
+            }
+            return response.blob();
+        }).then((val) => {
+            const url = URL.createObjectURL(val);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "Requirements.md";
+            a.click();
+            URL.revokeObjectURL(url);
+        }).catch((error) => {
+            console.error("Error sending email: ", error)
+        })
+    }
+
+    const generateCode = () => {
+        console.log("Generating Code")
     }
 
 
-
-
-    //Have an editable title up above with < > controls to circle between the pages
-    //Then render clickable boxes that launch a pop-up and then 
-
+    console.log("Page name is: ", pageName)
     return (
         <Flex flexDir="column" p={"1rem"} columnGap={"1rem"} rowGap={"1rem"} wrap={"wrap"}>
+            <Flex columnGap="1rem">
+                <EditableSpan key={pageName} text={pageName} setText={setPageName} />
+                <Button rightIcon={<PlusSquareIcon />} onClick={goToNewPage}>New Page</Button>
+            </Flex>
+            <ModalUserOption title="Get Software Developed Faster" description="You have finished with all the pages, would you like to submit all the pages?" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <Flex py="1rem" justifyContent="space-between">
+                    <Button onClick={sendEmail}>Send Email</Button>
+                    <Button onClick={generateCode}>Generate Code</Button>
+                </Flex>
+            </ModalUserOption>
             {rows.map((row, rowIndex) => {
                 return <Flex key={row.id + " " + rowIndex} flexDir="row" wrap="nowrap" columnGap="1rem">
                     {row.boxes.map((box, index) => {
@@ -98,7 +169,8 @@ function AssociateDataSourcesWithLayoutsPage() {
 
             })}
             <Button w="65%" alignSelf="center" onClick={addRow}>Add Row</Button>
-            <Button w="35%" onClick={handleSubmit} position="fixed" bottom="1rem" right="1rem" colorScheme='blue'>Submit</Button>
+            <Button w="35%" onClick={savePage} position="fixed" bottom="1rem" right="1rem" colorScheme='blue'>Save Page</Button>
+            <Button w="35%" onClick={showModalForUserAction} position="fixed" bottom="1rem" left="1rem" colorScheme='red'>Submit All</Button>
         </Flex>
     )
 }

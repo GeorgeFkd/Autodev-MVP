@@ -1,4 +1,4 @@
-import type { ApiData, AppContext, DataFromOpenAPIUrl, GeneralWebsiteUrl, Layout, OpenAPIUrl, SelectedApiData } from "@/types/types";
+import type { ApiData, AppContext, DataFromOpenAPIUrl, GeneralWebsiteUrl, Layout, OpenAPIUrl, Page, SelectedApiData } from "@/types/types";
 //i need some typing generally
 
 
@@ -40,6 +40,25 @@ export default function appReducer(app: AppContext, action: AllActions): AppCont
         return {
             ...app,
             selectedApiData: apiDataWithoutMetadata
+        }
+    }
+
+    if (action.type === "set-api-data-with-metadata") {
+        //@ts-expect-error
+        const payload: SelectedApiData = action.payload;
+        return {
+            ...app,
+            selectedApiData: payload
+        }
+    }
+
+    if (action.type == "add-page-with-layout") {
+        console.log("Adding page with layout")
+        //@ts-expect-error
+        const payload: Page = action.payload;
+        return {
+            ...app,
+            pages: [...app.pages, payload]
         }
     }
 

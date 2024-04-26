@@ -15,6 +15,9 @@ function ResizableBox({ width, height, setWidth, setHeight, children }: Resizabl
     useEffect(() => {
         const handleResize = () => {
             console.log("Setting new width and height")
+            //to not trigger a rerender when it covers the whole screen
+            //should only respond to the user dragging it
+            if (Math.abs(window.innerWidth - width) > 30 && Math.abs(window.innerHeight - height) > 30) return;
             setWidth(window.innerWidth);
             setHeight(window.innerHeight);
         }
