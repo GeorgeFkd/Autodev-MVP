@@ -11,7 +11,7 @@ export default function Home() {
       </GridItem>
       <GridItem>
         <VStack>
-          <Button><Link href={"/data-services"}>Data Services(Statistics+Dashboards)</Link></Button>
+          <Button><Link href={"/data-services"}>Data Services</Link></Button>
           <Button>E-Commerce Site</Button>
         </VStack>
       </GridItem>

@@ -1,10 +1,5 @@
-import { Resend } from "resend"
 import { AppContext } from "@/types/types"
 //TODO refactor this to be from a path variable
-//this is all untested i will see those tomorrow
-//should also probably do a download functionality
-//eh email is more interesting
-const resend = new Resend("re_MAX9g2WD_6sbcz3JkSbgyuRBC4KL8gSyQ")
 
 function createRequirementsDocumentFromOpenAPISpec(data: AppContext): string {
     return `
@@ -41,7 +36,6 @@ export async function POST(request: Request, response: Response) {
     console.log("Sending Requirements documents:")
     const data = await request.json() as AppContext;
     const fileContent = Buffer.from(createRequirementsDocumentFromOpenAPISpec(data), "utf-8")
-
     console.log("Data is: ", data)
     // create a file and send it back
     return new Response(fileContent, {

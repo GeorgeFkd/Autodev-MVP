@@ -5,6 +5,7 @@ import { useAppContext, useDispatch } from '@/contexts/AppContext'
 import { ApiData, ApiDataComponent, Layout, Page, StatisticalGraphType } from '@/types/types';
 import { ChevronDownIcon, PlusSquareIcon } from '@chakra-ui/icons';
 import { chakra, Button, Flex, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
 type Box = {
@@ -29,6 +30,7 @@ function AssociateDataSourcesWithLayoutsPage() {
     const [rows, setRows] = useState<Row[]>([{ boxes: [defaultBox], id: 0 }]);
     const [pageName, setPageName] = useState<string>("Page 1");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const router = useRouter();
     const appState = useAppContext();
     const alreadySelected = rows.map(row => row.boxes.map(box => box.dataSource)).flat();
     const availableOptions = appState?.selectedApiData?.map(apiData => apiData.description).filter(e => !alreadySelected.includes(e)) ?? [];
@@ -106,8 +108,8 @@ function AssociateDataSourcesWithLayoutsPage() {
         setIsModalOpen(true);
     }
 
-    const sendEmail = () => {
-        console.log("Sending Email")
+    const generateDocument = () => {
+        console.log("Generating Requirements Document")
         fetch("/api/create-requirements-file", {
             method: "POST",
             body: JSON.stringify(appState),
@@ -132,6 +134,7 @@ function AssociateDataSourcesWithLayoutsPage() {
 
     const generateCode = () => {
         console.log("Generating Code")
+        router.push("/generate-code")
     }
 
 
@@ -144,7 +147,7 @@ function AssociateDataSourcesWithLayoutsPage() {
             </Flex>
             <ModalUserOption title="Get Software Developed Faster" description="You have finished with all the pages, would you like to submit all the pages?" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <Flex py="1rem" justifyContent="space-between">
-                    <Button onClick={sendEmail}>Send Email</Button>
+                    <Button onClick={generateDocument}>Generate Document</Button>
                     <Button onClick={generateCode}>Generate Code</Button>
                 </Flex>
             </ModalUserOption>

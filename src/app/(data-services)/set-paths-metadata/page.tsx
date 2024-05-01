@@ -140,13 +140,13 @@ function ApiPathComponent({ data, handleChange, labelFrequency, labelToTime, lab
         <chakra.span fontWeight={"bold"}>Id: <chakra.span fontWeight={"initial"}>{data.identification}</chakra.span></chakra.span>
         <Menu>
 
-            <MenuButton as={Button}>
+            <MenuButton data-test-id="frequency-menu" as={Button}>
                 {labelFrequency || "Frequency"}
             </MenuButton>
             <MenuList>
                 {Object.keys(FrequencyVal).map(d => {
                     console.log("Option: ", d)
-                    return <MenuItem key={d} onClick={(e) => handleChange(index, { frequency: fromStringGetFreq(d) })}>{d}</MenuItem>
+                    return <MenuItem data-test-id={`frequency-${d}`} key={d} onClick={(e) => handleChange(index, { frequency: fromStringGetFreq(d) })}>{d}</MenuItem>
                 })}
             </MenuList>
         </Menu>

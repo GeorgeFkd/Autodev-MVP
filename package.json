@@ -13,8 +13,11 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@types/archiver": "^6.0.2",
+    "archiver": "^7.0.1",
     "framer-motion": "^11.1.7",
     "next": "14.2.2",
+    "playwright": "^1.43.1",
     "react": "^18",
     "react-dom": "^18",
     "react-email": "^2.1.1",
@@ -22,6 +25,7 @@
     "swagger-client": "^3.27.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.43.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
