@@ -14,11 +14,13 @@ ${data.pages.map(page => {
 ### Page Title: ${page.pageName}
 The components and their associated data are:
         ${page.associatedData.map(component => {
+            const fromDateStr = component.data.range?.from?.toLocaleDateString() ?? "Not specified"
+            const toDateStr = component.data.range?.to?.toLocaleDateString() ?? "Not specified"
             return `
 #### Component Name: ${component.componentName}
 Component Data(OpenAPI Operation from the URL): ${component.data.description}
 Frequency to be stored in the database: ${component.data.frequency}
-The required time range is from: ${component.data.range?.from} to ${component.data.range?.to}
+The required time range is from: ${fromDateStr} to ${toDateStr}
 We want it to be displayed in a ${component.data.graph} chart
 `
         })}
