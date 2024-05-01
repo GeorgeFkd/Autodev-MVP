@@ -1,5 +1,5 @@
 "use client"
-import { Inter } from "next/font/google";
+import { Inter, Manrope, Ysabeau } from "next/font/google";
 import "./globals.css";
 import { ChakraProvider } from "@chakra-ui/react";
 import { useReducer } from "react";

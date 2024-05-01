@@ -2,9 +2,10 @@
 import ModalUserOption from '@/components/ModalUserOption';
 import ResizableBox from '@/components/ResizableBox';
 import { useAppContext, useDispatch } from '@/contexts/AppContext'
+import useArrayData from '@/hooks/useArrayData';
 import { ApiData, ApiDataComponent, Layout, Page, StatisticalGraphType } from '@/types/types';
 import { ChevronDownIcon, PlusSquareIcon } from '@chakra-ui/icons';
-import { chakra, Button, Flex, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import { chakra, Button, Flex, IconButton, Menu, MenuButton, MenuItem, MenuList, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
@@ -27,6 +28,7 @@ interface Row {
 
 const defaultBox = { width: 450, height: 450, position: 0, dataSource: "", graphType: StatisticalGraphType.BarGraph, label: "Label" }
 function AssociateDataSourcesWithLayoutsPage() {
+    const toast = useToast();
     const [rows, setRows] = useState<Row[]>([{ boxes: [defaultBox], id: 0 }]);
     const [pageName, setPageName] = useState<string>("Page 1");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -71,7 +73,7 @@ function AssociateDataSourcesWithLayoutsPage() {
         setRows(newRows);
     }
 
-    const savePage = () => {
+    const savePage = (shouldShowToast: boolean) => {
         console.log("Submitting the following Data: ", rows);
         const componentNames = rows.map(row => row.boxes.map(box => box.label)).flat();
         const templateAreas = rows.map(row => row.boxes.map(box => box.label)).map(row => `"${row.join(" ")}"`);
@@ -93,11 +95,33 @@ function AssociateDataSourcesWithLayoutsPage() {
         const page: Page = { layout, pageName, associatedData: apiDataComponents }
         //@ts-expect-error
         dispatch({ type: "add-page-with-layout", payload: page })
+        if (shouldShowToast) {
+            toast({
+                duration: 3000,
+                status: "success",
+                title: "Progress:",
+                description: "Page saved successfully",
+                isClosable: true,
+            })
+        }
+
     }
 
     const goToNewPage = () => {
         //this has plenty of logic problems
         //i cannot change between pages
+        if (availableOptions.length === 0) {
+            //can add an option to proceed anyway
+            toast({
+                title: "Error",
+                status: "warning",
+                description: "You have already selected all the data sources",
+                duration: 6000,
+                isClosable: true,
+            })
+            return;
+        }
+        savePage(false);
         console.log("Creating new Page")
         setRows([]);
         setPageName(prev => "New Page");
@@ -133,7 +157,7 @@ function AssociateDataSourcesWithLayoutsPage() {
     }
 
     const generateCode = () => {
-        console.log("Generating Code")
+        console.log("Going to /generate-code")
         router.push("/generate-code")
     }
 
@@ -172,7 +196,7 @@ function AssociateDataSourcesWithLayoutsPage() {
 
             })}
             <Button w="65%" alignSelf="center" onClick={addRow}>Add Row</Button>
-            <Button w="35%" onClick={savePage} position="fixed" bottom="1rem" right="1rem" colorScheme='blue'>Save Page</Button>
+            <Button w="35%" onClick={() => savePage(true)} position="fixed" bottom="1rem" right="1rem" colorScheme='blue'>Save Page</Button>
             <Button w="35%" onClick={showModalForUserAction} position="fixed" bottom="1rem" left="1rem" colorScheme='red'>Submit All</Button>
         </Flex>
     )
