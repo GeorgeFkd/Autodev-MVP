@@ -6,6 +6,7 @@ export function useGoHome({ condition }: { condition: (ctx: AppContext) => boole
     const router = useRouter();
     const appContext = useAppContext();
     if (appContext == null || condition(appContext)) {
-        router.push("/");
+        console.log("Rerouting to home page...")
+        router.replace("/");
     }
 }

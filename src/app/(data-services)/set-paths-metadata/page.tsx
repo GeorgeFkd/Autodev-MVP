@@ -1,71 +1,26 @@
 "use client"
-import { useAppContext, useDispatch } from '@/contexts/AppContext'
+import { useGlobalState } from '@/contexts/AppContext'
 import { ApiData, Frequency as FrequencyVal } from '@/types/types';
 import { Flex, chakra, Menu, MenuButton, MenuList, MenuItem, Button, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
-import type { MetadataForData, TimeRange, Frequency } from '@/types/types';
+import type { MetadataForData, TimeRange } from '@/types/types';
+import { useGoHome } from '@/hooks/useGoHome';
+import { defaultMetadataForDataSources, fromFreqGetString, fromStringGetFreq } from 'src/utils/utils';
+import useArrayData from '@/hooks/useArrayData';
 
-const fromStringGetFreq = (freq: string | undefined) => {
-    if (freq === undefined) return FrequencyVal.Hourly;
-    if (freq === "Hourly") return FrequencyVal.Hourly;
-    if (freq === "Daily") return FrequencyVal.Daily;
-    if (freq === "Weekly") return FrequencyVal.Weekly;
-    if (freq === "Monthly") return FrequencyVal.Monthly;
-    if (freq === "Quarterly") return FrequencyVal.Quarterly;
-    if (freq === "Yearly") return FrequencyVal.Yearly;
-}
 
-const fromFreqGetString = (freq: Frequency | undefined) => {
-    switch (freq) {
-        case FrequencyVal.Hourly: return "Hourly";
-        case FrequencyVal.Daily: return "Daily";
-        case FrequencyVal.Weekly: return "Weekly";
-        case FrequencyVal.Monthly: return "Monthly";
-        case FrequencyVal.Quarterly: return "Quarterly";
-        case FrequencyVal.Yearly: return "Yearly";
-        case undefined: return "Frequency";
-    }
-}
+
 
 function SetPathsMetadataPage() {
-    const appState = useAppContext();
-    const dispatch = useDispatch();
+    const { appState, dispatch } = useGlobalState();
+    useGoHome({ condition: (state) => (!state.selectedApiData || state.selectedApiData.length === 0) })
+
     const toast = useToast();
     const router = useRouter();
-    //to be able to handle both the time range and the frequency
-    const [pathsMetadata, setPathsMetadata] = useState<MetadataForData[]>([]);
-    if (!appState?.selectedApiData) {
-        return "Something went wrong"
-    }
 
-    const handleMetadataChange = (index: number, metadata: Partial<MetadataForData>) => {
-        //i could extract sth like this to a hook
-        console.log("Metadata adding: ", metadata)
-        setPathsMetadata(prev => {
-            const newArr = [...prev]
-            newArr[index] = { ...newArr[index], ...metadata }
-            return newArr;
-        })
-    }
-
-
-
-    const addMetaDataToApi = () => {
-        const updatedSelectedData: ApiData[] = appState?.selectedApiData;
-        console.log("Paths Metadata: ", pathsMetadata)
-        pathsMetadata.forEach((metadata, index) => {
-            updatedSelectedData[index] = { ...updatedSelectedData[index], ...metadata }
-        })
-        //@ts-expect-error
-        dispatch({ type: "set-api-data-with-metadata", payload: updatedSelectedData })
-        router.push("/connect-with-layouts")
-        console.log("Updated data is: ", appState?.selectedApiData)
-
-    }
-
-
-
+    const initialData: MetadataForData[] = defaultMetadataForDataSources(appState?.selectedApiData.length || 0)
+    const { editElementAt: handleMetadataChange, data: pathsMetadata } = useArrayData<MetadataForData>({ initialData: initialData });
 
     const handleSubmit = () => {
         if (!(pathsMetadata.length === appState?.selectedApiData?.length)) {
@@ -89,9 +44,21 @@ function SetPathsMetadataPage() {
         }
     }
 
+    const addMetaDataToApi = () => {
+        const updatedSelectedData: ApiData[] = appState?.selectedApiData!;
+        console.log("Paths Metadata: ", pathsMetadata)
+        pathsMetadata.forEach((metadata, index) => {
+            updatedSelectedData[index] = { ...updatedSelectedData[index], ...metadata }
+        })
+        //@ts-expect-error
+        dispatch({ type: "set-api-data-with-metadata", payload: updatedSelectedData })
+        router.push("/connect-with-layouts")
+        console.log("Updated data is: ", appState?.selectedApiData)
+    }
+
     return (
         <Flex flexDir="column" w="100vw" h="100vh" rowGap={"1rem"} alignItems={"center"} paddingTop="1rem" px="2.5rem">
-            {appState.selectedApiData.map((apiData, index) => {
+            {appState?.selectedApiData.map((apiData, index) => {
                 return <ApiPathComponent key={apiData.identification} data={apiData} handleChange={handleMetadataChange} labelFromTime="From Date" labelToTime='To Date' labelFrequency={fromFreqGetString(pathsMetadata[index]?.frequency)} index={index} />
             })}
             <Button w="35%" onClick={(e) => handleSubmit()}>Submit</Button>
@@ -116,9 +83,6 @@ const DEFAULT_TIME_RANGE: TimeRange = {
 function ApiPathComponent({ data, handleChange, labelFrequency, labelToTime, labelFromTime, index }: EditApiPathProps) {
     const [fromDate, setFromDate] = useState<string>(DEFAULT_TIME_RANGE.from.toDateString());
     const [toDate, setToDate] = useState<string>(DEFAULT_TIME_RANGE.to.toDateString());
-
-    //sth goes wrong here  
-    //range and frequency remain null 
     const setDates = () => {
         handleChange(index, { range: { from: new Date(fromDate), to: new Date(toDate) } })
     }
@@ -150,6 +114,7 @@ function ApiPathComponent({ data, handleChange, labelFrequency, labelToTime, lab
                 })}
             </MenuList>
         </Menu>
+        {/* use the labels provided */}
         <input type="date" value={fromDate} onChange={e => handleDateChange(e.target.value, true)} />
         <input type="date" value={toDate} onChange={e => handleDateChange(e.target.value, false)} />
     </Flex>

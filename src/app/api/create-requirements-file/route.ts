@@ -1,9 +1,8 @@
-import { AppContext } from "@/types/types"
-//TODO refactor this to be from a path variable
+import type { AppContext } from "@/types/types"
 
 function createRequirementsDocumentFromOpenAPISpec(data: AppContext): string {
     return `
-# Creating Software by using the Autodev tool
+# Creating Software using the Autodev tool
     
 The url of the API we want to use is: **${data.inputUrl}**
 
@@ -14,8 +13,12 @@ ${data.pages.map(page => {
 ### Page Title: ${page.pageName}
 The components and their associated data are:
         ${page.associatedData.map(component => {
-            const fromDateStr = component.data.range?.from?.toLocaleDateString() ?? "Not specified"
-            const toDateStr = component.data.range?.to?.toLocaleDateString() ?? "Not specified"
+            const fromDate = component.data.range?.from;
+            const toDate = component.data.range?.to;
+            //this is a temporary fix, i aint getting proper date object from frontend
+            //getting a string like: 2024-05-01T00:00:00.000Z
+            const fromDateStr = fromDate?.toLocaleDateString ? fromDate?.toLocaleDateString() : fromDate;
+            const toDateStr = toDate?.toLocaleDateString ? toDate?.toLocaleDateString() : toDate;
             return `
 #### Component Name: ${component.componentName}
 Component Data(OpenAPI Operation from the URL): ${component.data.description}

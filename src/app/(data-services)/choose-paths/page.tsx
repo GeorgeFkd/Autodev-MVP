@@ -1,13 +1,14 @@
 "use client"
 import Container from '@/components/Container';
-import { useAppContext, useDispatch } from '@/contexts/AppContext'
-import { Button, Checkbox, Flex, VStack, chakra, Grid } from '@chakra-ui/react';
+import { Header3 } from '@/components/Headers';
+import { useGlobalState } from '@/contexts/AppContext'
+import { ApiData } from '@/types/types';
+import { Button, Checkbox, Flex, chakra } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
 function ChoosePathsPage() {
-    const appState = useAppContext();
-    const dispatch = useDispatch();
+    const { appState, dispatch } = useGlobalState();
     const [checkedVals, setCheckedVals] = useState<string[]>([]);
     const router = useRouter();
     const handleChecked = (id: string) => {
@@ -30,23 +31,43 @@ function ChoosePathsPage() {
     if (appState?.selectedApiData === undefined || appState?.selectedApiData?.length === 0) {
         return "Something went wrong"
     }
-    console.log("Checked Paths are: ", checkedVals)
-    console.log("Paths are: ", appState.selectedApiData)
     return (
         <Container>
-            <chakra.h1 fontSize={"1.8rem"}>From the URL you provided you have access to the following functionalities:</chakra.h1>
-            <Flex px="2.5rem" rowGap={"1rem"} flexDir={"column"}>
-                {appState.selectedApiData.map(apiData => {
-                    return <Flex py="0.5rem" px="1rem" w="100%" key={apiData.identification} columnGap={"1.5rem"} border="solid black 1px">
-                        <chakra.span fontWeight={"bold"}>Description: <chakra.span fontWeight={"initial"}>{apiData.description}</chakra.span></chakra.span>
-                        <chakra.span fontWeight={"bold"}>Id: <chakra.span fontWeight={"initial"}>{apiData.identification}</chakra.span></chakra.span>
-                        <Checkbox colorScheme='green' onChange={(e) => handleChecked(apiData.identification)}>Include</Checkbox>
-                    </Flex>
-                })}
-            </Flex>
+            <Header3 text="From the URL you provided you have access to the following functionalities:" />
+            <SelectOpenAPIPathsList data={appState.selectedApiData} handleChecked={handleChecked} />
             <Button size={"lg"} alignSelf={"center"} onClick={(e) => handleSubmit()}>Submit</Button>
 
         </Container>
+    )
+}
+
+interface SelectOpenAPIPathsListProps {
+    data: ApiData[],
+    handleChecked: (id: string) => void
+}
+
+function SelectOpenAPIPathsList({ data, handleChecked }: SelectOpenAPIPathsListProps) {
+    return (
+        <Flex px="2.5rem" rowGap={"1rem"} flexDir={"column"}>
+            {data.map(apiData => {
+                return (<PathCheckbox key={apiData.identification} data={apiData} handleChecked={handleChecked} />)
+            })}
+        </Flex>
+    )
+}
+
+interface PathCheckboxProps {
+    data: ApiData,
+    handleChecked: (id: string) => void
+}
+
+function PathCheckbox({ data, handleChecked }: PathCheckboxProps) {
+    return (
+        <Flex py="0.5rem" px="1rem" w="100%" key={data.identification} columnGap={"1.5rem"} border="solid black 1px">
+            <chakra.span fontWeight={"bold"}>Description: <chakra.span fontWeight={"initial"}>{data.description}</chakra.span></chakra.span>
+            <chakra.span fontWeight={"bold"}>Id: <chakra.span fontWeight={"initial"}>{data.identification}</chakra.span></chakra.span>
+            <Checkbox colorScheme='green' onChange={(e) => handleChecked(data.identification)}>Include</Checkbox>
+        </Flex>
     )
 }
 

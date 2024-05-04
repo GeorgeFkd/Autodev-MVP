@@ -28,13 +28,7 @@ export async function POST(request: Request) {
         console.log("The details are: ", apiOperationDetails)
     }
 
-    //thelw na parw ola ta paths
-
-    //kai gia kathe path na parw to description kai to __originalOperationId
-
-
     console.log("Returning to client: ", result)
     const returnVal = Response.json(result)
-    // console.log(await returnVal.text())
     return returnVal
 }

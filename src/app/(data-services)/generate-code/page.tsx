@@ -1,16 +1,14 @@
 "use client";
 import Container from '@/components/Container';
-import { useAppContext, useDispatch } from '@/contexts/AppContext'
+import { useGlobalState } from '@/contexts/AppContext'
 import React, { useEffect, useState } from 'react'
 import { Button, Menu, MenuButton, MenuItem, MenuList, chakra } from "@chakra-ui/react"
 import { ArrowDownIcon } from "@chakra-ui/icons"
 
 function GenerateCodePage() {
-    const appState = useAppContext();
-    const dispatch = useDispatch();
+    const { appState, dispatch } = useGlobalState();
     const [availableLanguages, setAvailableLanguages] = useState([""])
     const [selectedLanguage, setSelectedLanguage] = useState("");
-    //the app is made to only receive requests from its own frontend
     const generateTheCode = () => {
         if (!appState?.inputUrl || appState?.inputUrl === "some weird page") {
             console.log("Skipping code generation request")
@@ -46,11 +44,11 @@ function GenerateCodePage() {
             })
 
     }
-    //there is a bug here caused by scrolling
 
 
     useEffect(() => {
         let ignore = false;
+        //for some reason this does not work in production
         if (!ignore) {
             fetch("http://api.openapi-generator.tech/api/gen/clients").then((response) => {
                 return response.json() as Promise<string[]>
@@ -75,6 +73,7 @@ function GenerateCodePage() {
         <Container>
             <chakra.h1 fontSize={"1.5rem"}>Generate Code for: { }</chakra.h1>
             <chakra.p>URL: {appState?.inputUrl}</chakra.p>
+            {/*  there is a bug here caused by scrolling */}
             <Menu placement="right-end">
                 <MenuButton as={Button} rightIcon={<ArrowDownIcon />}>
                     {selectedLanguage || "Choose Programming Language"}

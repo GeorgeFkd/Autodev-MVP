@@ -1,13 +1,15 @@
 "use client"
 import ModalUserOption from '@/components/ModalUserOption';
 import ResizableBox from '@/components/ResizableBox';
-import { useAppContext, useDispatch } from '@/contexts/AppContext'
+import { useAppContext, useDispatch, useGlobalState } from '@/contexts/AppContext'
 import useArrayData from '@/hooks/useArrayData';
+import { useGoHome } from '@/hooks/useGoHome';
 import { ApiData, ApiDataComponent, Layout, Page, StatisticalGraphType } from '@/types/types';
 import { ChevronDownIcon, PlusSquareIcon } from '@chakra-ui/icons';
 import { chakra, Button, Flex, IconButton, Menu, MenuButton, MenuItem, MenuList, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
+import { downloadFile } from 'src/utils/utils';
 
 type Box = {
     width: number,
@@ -26,24 +28,23 @@ interface Row {
     id: number,
 }
 
+
+
+
 const defaultBox = { width: 450, height: 450, position: 0, dataSource: "", graphType: StatisticalGraphType.BarGraph, label: "Label" }
 function AssociateDataSourcesWithLayoutsPage() {
+    useGoHome({ condition: (state) => state == null || !state?.selectedApiData || state?.selectedApiData.length === 0 })
     const toast = useToast();
     const [rows, setRows] = useState<Row[]>([{ boxes: [defaultBox], id: 0 }]);
     const [pageName, setPageName] = useState<string>("Page 1");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const router = useRouter();
-    const appState = useAppContext();
+    //those should probably be in the same hook and then just pick what you want
+    const { appState, dispatch } = useGlobalState();
     const alreadySelected = rows.map(row => row.boxes.map(box => box.dataSource)).flat();
     const availableOptions = appState?.selectedApiData?.map(apiData => apiData.description).filter(e => !alreadySelected.includes(e)) ?? [];
     //the menu should only have the non selected options
-    const dispatch = useDispatch();
 
-    if (!appState?.selectedApiData) {
-        return "something went wrong"
-    }
-
-    console.log("App State for pages is: ", appState.pages)
 
 
     const changeBox = (rowId: number, boxId: number, newBox: Partial<Box>) => {
@@ -88,7 +89,7 @@ function AssociateDataSourcesWithLayoutsPage() {
             components: componentNames,
         }
         const apiDataComponents: ApiDataComponent[] = rows.map(row => row.boxes.map(box => {
-            const data = appState.selectedApiData.find(apiData => apiData.description === box.dataSource) as ApiData;
+            const data = appState?.selectedApiData.find(apiData => apiData.description === box.dataSource) as ApiData;
             data.graph = box.graphType;
             return { data, componentName: box.label }
         })).flat();
@@ -145,12 +146,7 @@ function AssociateDataSourcesWithLayoutsPage() {
             }
             return response.blob();
         }).then((val) => {
-            const url = URL.createObjectURL(val);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = "Requirements.md";
-            a.click();
-            URL.revokeObjectURL(url);
+            downloadFile(val, "Requirements.md")
         }).catch((error) => {
             console.error("Error sending email: ", error)
         })

@@ -6,7 +6,9 @@ type Dispatch<A> = (value: A) => void
 export const AppDispatchContext = createContext<Dispatch<setUrlAction> | null>(null);
 
 
-
+export function useGlobalState() {
+    return { appState: useAppContext(), dispatch: useDispatch() }
+}
 
 export function useAppContext() {
     return useContext(AppContext);

@@ -1,9 +1,10 @@
 "use client"
-import { useAppContext, useDispatch } from '@/contexts/AppContext'
+import { useAppContext, useDispatch, useGlobalState } from '@/contexts/AppContext'
 import React, { useState } from 'react'
 import { Button, Flex, Grid, chakra } from "@chakra-ui/react"
 import { useRouter } from 'next/navigation';
 import Container from '@/components/Container';
+import { TextMD, TextSM } from '@/components/Text';
 
 
 enum OASValidationResult {
@@ -15,8 +16,7 @@ enum OASValidationResult {
 const VALIDATE_OPENAPI_FILE_URL = "/api/fetch-file"
 
 function FillDataSourcesPage() {
-    const appState = useAppContext();
-    const dispatch = useDispatch();
+    const { appState, dispatch } = useGlobalState();
     const router = useRouter();
     const [validationState, setValidationState] = useState(OASValidationResult.Loading);
     const [loading, setIsLoading] = useState(false)
@@ -46,12 +46,12 @@ function FillDataSourcesPage() {
     return (
         <Container>
             <Flex flexDir="column" rowGap="2rem">
-                <chakra.span fontSize={"1.2rem"}>Url is: {appState?.inputUrl}</chakra.span>
+                <TextMD text={"Url is: " + appState?.inputUrl || "No Url Provided"} />
                 <Button onClick={() => handleVerifyUrl()} isLoading={loading}>Verify Url</Button>
-                {validationState === OASValidationResult.Loading && <chakra.span fontWeight={"bold"} fontSize={"1.1rem"}>Not yet Validated</chakra.span>}
-                {validationState === OASValidationResult.Success && <chakra.span fontWeight={"bold"} fontSize={"1.1rem"}>Successfully Validated</chakra.span>}
-                {validationState === OASValidationResult.Failure && <chakra.span fontWeight={"bold"} fontSize={"1.1rem"}>Validation Failed</chakra.span>}
-                {loading && <chakra.span fontSize="1.1rem">Checking if the URL points to a valid OpenAPI file...</chakra.span>}
+                {validationState === OASValidationResult.Loading && <TextSM text="Not Yet Validated" />}
+                {validationState === OASValidationResult.Success && <TextSM text="Successfully Validated" />}
+                {validationState === OASValidationResult.Failure && <TextSM text="Validation Failed" />}
+                {loading && <TextMD text="Checking if the URL points to a valid OpenAPI file..." />}
             </Flex>
         </Container>
     )
