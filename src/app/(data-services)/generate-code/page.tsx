@@ -9,40 +9,32 @@ function GenerateCodePage() {
     const { appState, dispatch } = useGlobalState();
     const [availableLanguages, setAvailableLanguages] = useState([""])
     const [selectedLanguage, setSelectedLanguage] = useState("");
+    const [isLoading, setIsLoading] = useState(false)
     const generateTheCode = () => {
         if (!appState?.inputUrl || appState?.inputUrl === "some weird page") {
             console.log("Skipping code generation request")
             return;
         }
-        console.log("Generating code for URL: ", appState?.inputUrl)
-        fetch(`http://api.openapi-generator.tech/api/gen/clients/${selectedLanguage}`, {
+        setIsLoading(true)
+        fetch("/api/openapi-gen", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
                 openAPIUrl: appState?.inputUrl,
+                language: selectedLanguage,
                 options: {},
                 spec: {}
             })
+        }).then((response) => {
+            return response.json()
+        }).then((data) => {
+            setIsLoading(false)
+            const downloadLink = data.link;
+            console.log("Download link: ", downloadLink)
+            window.open(downloadLink, "_blank")
         })
-            .then((response) => {
-                console.log("Response received from API", response)
-                // dispatch({ type: "setGeneratedCode", payload: data })
-                //"link":string,"code":string
-                return response.json()
-            })
-            .then((data) => {
-                //not the best UX but good for now
-                console.log("Data received from API", data)
-                const downloadLink = data.link;
-                console.log("Download link: ", downloadLink)
-                window.open(downloadLink, "_blank")
-            })
-            .catch((error) => {
-                console.log(error)
-            })
-
     }
 
 
@@ -50,7 +42,7 @@ function GenerateCodePage() {
         let ignore = false;
         //for some reason this does not work in production
         if (!ignore) {
-            fetch("http://api.openapi-generator.tech/api/gen/clients").then((response) => {
+            fetch("/api/openapi-langs").then((response) => {
                 return response.json() as Promise<string[]>
             })
                 .then((data) => {
@@ -85,7 +77,7 @@ function GenerateCodePage() {
                     })}
                 </MenuList>
             </Menu>
-            <Button onClick={() => generateTheCode()}>Submit</Button>
+            <Button onClick={() => generateTheCode()} isLoading={isLoading}>Submit</Button>
         </Container>
     )
 }
