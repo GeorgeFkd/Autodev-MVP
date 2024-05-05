@@ -6,7 +6,7 @@ export enum StatisticalGraphType {
     ScatterPlot = "Scatterplot",
     PieChart = "Piechart",
     BarGraph = "Bargraph",
-    Histogram = "Histogram",
+    LineGraph = "Linegraph",
 
 }
 

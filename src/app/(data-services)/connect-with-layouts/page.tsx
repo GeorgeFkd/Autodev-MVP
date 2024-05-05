@@ -1,4 +1,5 @@
 "use client"
+import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Pie, PieChart, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from "recharts"
 import ModalUserOption from '@/components/ModalUserOption';
 import ResizableBox from '@/components/ResizableBox';
 import { useAppContext, useDispatch, useGlobalState } from '@/contexts/AppContext'
@@ -140,9 +141,9 @@ function AssociateDataSourcesWithLayoutsPage() {
             body: JSON.stringify(appState),
         }).then((response) => {
             if (response.ok) {
-                console.log("Email sent")
+                console.log("Requirements document properly generated")
             } else {
-                console.error("Error sending email")
+                console.error("Error generating requirements document")
             }
             return response.blob();
         }).then((val) => {
@@ -182,7 +183,9 @@ function AssociateDataSourcesWithLayoutsPage() {
                                     <ChooseGraphType setGraphType={(graphType) => changeBox(rowIndex, index, { graphType })} graphType={box.graphType} />
                                     {/* dropdown for graph type */}
                                     <ChooseDataSource setDataSource={(dataSource) => changeBox(rowIndex, index, { dataSource })} dataSource={box.dataSource} availableOptions={availableOptions} />
+
                                 </Flex>
+                                <RenderChart graphType={box.graphType} width={box.width * 0.7} height={box.height * 0.5} />
                             </Flex>
                         </ResizableBox>
                     })}
@@ -196,6 +199,226 @@ function AssociateDataSourcesWithLayoutsPage() {
             <Button w="35%" onClick={showModalForUserAction} position="fixed" bottom="1rem" left="1rem" colorScheme='red'>Submit All</Button>
         </Flex>
     )
+}
+
+
+interface FakeChartProps {
+    graphType: StatisticalGraphType
+    width: number,
+    height: number,
+
+}
+
+function RenderChart({ graphType, width, height }: FakeChartProps) {
+    if (graphType === StatisticalGraphType.BarGraph) {
+        const data = [{ name: 'Page A', uv: 400, pv: 2400, amt: 2400 }];
+        return <BarChart width={width} height={height} data={data}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Bar dataKey="uv" barSize={30} fill="#8884d8"
+            />
+        </BarChart>
+    }
+    if (graphType === StatisticalGraphType.PieChart) {
+        const data01 = [
+            {
+                "name": "Group A",
+                "value": 400
+            },
+            {
+                "name": "Group B",
+                "value": 300
+            },
+            {
+                "name": "Group C",
+                "value": 300
+            },
+            {
+                "name": "Group D",
+                "value": 200
+            },
+            {
+                "name": "Group E",
+                "value": 278
+            },
+            {
+                "name": "Group F",
+                "value": 189
+            }
+        ];
+        const data02 = [
+            {
+                "name": "Group A",
+                "value": 2400
+            },
+            {
+                "name": "Group B",
+                "value": 4567
+            },
+            {
+                "name": "Group C",
+                "value": 1398
+            },
+            {
+                "name": "Group D",
+                "value": 9800
+            },
+            {
+                "name": "Group E",
+                "value": 3908
+            },
+            {
+                "name": "Group F",
+                "value": 4800
+            }
+        ];
+        return <PieChart width={width} height={height}>
+            <Pie data={data01} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={50} fill="#8884d8" />
+            <Pie data={data02} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#82ca9d" label />
+        </PieChart>
+    }
+    if (graphType === StatisticalGraphType.ScatterPlot) {
+        const data01 = [
+            {
+                "x": 100,
+                "y": 200,
+                "z": 200
+            },
+            {
+                "x": 120,
+                "y": 100,
+                "z": 260
+            },
+            {
+                "x": 170,
+                "y": 300,
+                "z": 400
+            },
+            {
+                "x": 140,
+                "y": 250,
+                "z": 280
+            },
+            {
+                "x": 150,
+                "y": 400,
+                "z": 500
+            },
+            {
+                "x": 110,
+                "y": 280,
+                "z": 200
+            }
+        ];
+        const data02 = [
+            {
+                "x": 200,
+                "y": 260,
+                "z": 240
+            },
+            {
+                "x": 240,
+                "y": 290,
+                "z": 220
+            },
+            {
+                "x": 190,
+                "y": 290,
+                "z": 250
+            },
+            {
+                "x": 198,
+                "y": 250,
+                "z": 210
+            },
+            {
+                "x": 180,
+                "y": 280,
+                "z": 260
+            },
+            {
+                "x": 210,
+                "y": 220,
+                "z": 230
+            }
+        ];
+        return <ScatterChart
+            width={width}
+            height={height}
+            margin={{
+                top: 20,
+                right: 20,
+                bottom: 10,
+                left: 10,
+            }}
+        >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="x" type="number" name="stature" unit="cm" />
+            <YAxis dataKey="y" type="number" name="weight" unit="kg" />
+            <ZAxis dataKey="z" type="number" range={[64, 144]} name="score" unit="km" />
+            <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+            <Legend />
+            <Scatter name="A school" data={data01} fill="#8884d8" />
+            <Scatter name="B school" data={data02} fill="#82ca9d" />
+        </ScatterChart>
+    }
+    if (graphType === StatisticalGraphType.LineGraph) {
+        const data = [
+            {
+                "name": "Page A",
+                "uv": 4000,
+                "pv": 2400,
+                "amt": 2400
+            },
+            {
+                "name": "Page B",
+                "uv": 3000,
+                "pv": 1398,
+                "amt": 2210
+            },
+            {
+                "name": "Page C",
+                "uv": 2000,
+                "pv": 9800,
+                "amt": 2290
+            },
+            {
+                "name": "Page D",
+                "uv": 2780,
+                "pv": 3908,
+                "amt": 2000
+            },
+            {
+                "name": "Page E",
+                "uv": 1890,
+                "pv": 4800,
+                "amt": 2181
+            },
+            {
+                "name": "Page F",
+                "uv": 2390,
+                "pv": 3800,
+                "amt": 2500
+            },
+            {
+                "name": "Page G",
+                "uv": 3490,
+                "pv": 4300,
+                "amt": 2100
+            }
+        ]
+        return <LineChart width={width} height={height} data={data}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="pv" stroke="#8884d8" />
+            <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+        </LineChart>
+    }
+    return <chakra.div bg="gray.200">No Graph Selected</chakra.div>
 }
 
 function ChooseDataSource({ setDataSource, dataSource, availableOptions }: { setDataSource: (dataSource: string) => void, dataSource: string, availableOptions: string[] }) {
@@ -218,15 +441,16 @@ function ChooseGraphType({ setGraphType, graphType }: { setGraphType: (graphType
         if (graphType === "BarGraph") {
             return StatisticalGraphType.BarGraph
         }
-        if (graphType === "Histogram") {
-            return StatisticalGraphType.Histogram
-        }
         if (graphType === "PieChart") {
             return StatisticalGraphType.PieChart
         }
         if (graphType === "ScatterPlot") {
             return StatisticalGraphType.ScatterPlot
         }
+        if (graphType === "LineGraph") {
+            return StatisticalGraphType.LineGraph
+        }
+
         return StatisticalGraphType.BarGraph
     }
 
