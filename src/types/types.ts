@@ -56,12 +56,7 @@ export interface ApiDataComponent {
     data: ApiData,
     componentName: string,
 }
-// let metadata: MetadataForData = { frequency: Frequency.Daily, range: { from: null, to: null } }
-// let apiData: DataFromOpenAPIUrl = { description: "Fetches pets from the pet store", identification: "getPetsById" }
-// let all: LabeledApiData = { data: { ...metadata, ...apiData }, label: "Hello World" }
-// let myvar: AssociateComponentWithData =
-//     { "component": all }
-// console.log(Object.keys(StatisticalGraphType))
+
 
 
 export interface Page {
@@ -70,11 +65,18 @@ export interface Page {
     pageName: string
 }
 
+export enum SupportedSoftware {
+    E_COMMERCE = "E-Commerce",
+    DATA_SERVICES = "Data Services",
+    NONE = "No Type"
+}
+
 export interface AppContext {
     inputUrl: OpenAPIUrl | GeneralWebsiteUrl;
     selectedApiData: SelectedApiData;
-    pages: Page[]
-
+    pages: Page[];
+    appName: string;
+    appType: SupportedSoftware
 }
 
 

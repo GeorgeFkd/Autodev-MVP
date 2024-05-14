@@ -10,10 +10,10 @@ export function useGlobalState() {
     return { appState: useAppContext(), dispatch: useDispatch() }
 }
 
-export function useAppContext() {
+function useAppContext() {
     return useContext(AppContext);
 }
 
-export function useDispatch() {
+function useDispatch() {
     return useContext(AppDispatchContext);
 }

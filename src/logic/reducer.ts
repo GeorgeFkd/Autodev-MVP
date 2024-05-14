@@ -1,4 +1,4 @@
-import type { ApiData, AppContext, DataFromOpenAPIUrl, GeneralWebsiteUrl, Layout, OpenAPIUrl, Page, SelectedApiData } from "@/types/types";
+import { SupportedSoftware, type ApiData, type AppContext, type DataFromOpenAPIUrl, type GeneralWebsiteUrl, type Layout, type OpenAPIUrl, type Page, type SelectedApiData } from "@/types/types";
 //i need some typing generally
 
 
@@ -19,7 +19,7 @@ type addPage = AppAction<string>;
 type editPage = AppAction<string>;
 
 
-export const EMPTY_APP_CONTEXT: AppContext = { inputUrl: "some weird page", pages: [], selectedApiData: [] }
+export const EMPTY_APP_CONTEXT: AppContext = { inputUrl: "some weird page", pages: [], selectedApiData: [], appName: "", appType: SupportedSoftware.NONE }
 
 export type AllActions = setUrlAction;
 
@@ -30,6 +30,25 @@ export default function appReducer(app: AppContext, action: AllActions): AppCont
             ...app,
             inputUrl: payload
         }
+    }
+
+    if (action.type == "set-app-name") {
+        const payload: string = action.payload;
+        console.log("Doing set-app-name with arg: ", payload)
+        return {
+            ...app,
+            appName: payload
+        }
+    }
+
+    if (action.type == "set-app-type") {
+        //@ts-expect-error
+        const payload: SupportedSoftware = action.payload;
+        return {
+            ...app,
+            appType: payload
+        }
+
     }
 
     if (action.type == "set-api-data") {

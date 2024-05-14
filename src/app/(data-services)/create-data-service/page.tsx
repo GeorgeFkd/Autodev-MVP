@@ -1,7 +1,7 @@
 "use client"
-import { useAppContext, useDispatch, useGlobalState } from '@/contexts/AppContext'
+import { useGlobalState } from '@/contexts/AppContext'
 import React, { useState } from 'react'
-import { Button, Flex, Grid, chakra } from "@chakra-ui/react"
+import { Button, Flex } from "@chakra-ui/react"
 import { useRouter } from 'next/navigation';
 import Container from '@/components/Container';
 import { TextMD, TextSM } from '@/components/Text';
@@ -22,7 +22,6 @@ function FillDataSourcesPage() {
     const [loading, setIsLoading] = useState(false)
     const handleVerifyUrl = () => {
         console.log("Submitting to API: " + appState?.inputUrl)
-        // const request = new Request({ body: appState?.inputUrl, url: "/api/fetch-file", method: "GET" })
         setIsLoading(true);
         fetch(VALIDATE_OPENAPI_FILE_URL, { method: "POST", body: appState?.inputUrl })
             .then((val) => {

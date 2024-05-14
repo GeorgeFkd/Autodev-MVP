@@ -2,8 +2,7 @@
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Pie, PieChart, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from "recharts"
 import ModalUserOption from '@/components/ModalUserOption';
 import ResizableBox from '@/components/ResizableBox';
-import { useAppContext, useDispatch, useGlobalState } from '@/contexts/AppContext'
-import useArrayData from '@/hooks/useArrayData';
+import { useGlobalState } from '@/contexts/AppContext'
 import { useGoHome } from '@/hooks/useGoHome';
 import { ApiData, ApiDataComponent, Layout, Page, StatisticalGraphType } from '@/types/types';
 import { ChevronDownIcon, PlusSquareIcon } from '@chakra-ui/icons';
@@ -135,9 +134,11 @@ function AssociateDataSourcesWithLayoutsPage() {
     }
 
     const generateDocument = () => {
+        //can extract this to a method to isolate logic
         console.log("Generating Requirements Document")
         fetch("/api/create-requirements-file", {
             method: "POST",
+            // how tf this works
             body: JSON.stringify(appState),
         }).then((response) => {
             if (response.ok) {
