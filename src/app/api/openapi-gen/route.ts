@@ -54,7 +54,6 @@ export async function POST(request: NextRequest) {
         for await (const entry of zipStream) {
             const path = entry.props.path
             const content = await entry.buffer();
-            console.log("Content: ", content.toString("base64"))
             console.log("Path:", path)
             const result = await uploadFileToGithub(path, content.toString("base64"))
             if (!result.body) continue
@@ -78,15 +77,20 @@ export async function POST(request: NextRequest) {
 }
 
 function getAuthToken() {
-    return "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"
+    console.log(process.env.GITHUB_TOKEN)
+    return process.env.GITHUB_TOKEN as string;
 }
 
 function getUser() {
-    return "GeorgeFkd"
+    console.log(process.env.GITHUB_USER)
+
+    return process.env.GITHUB_USER as string;
 }
 
 function getEmail() {
-    return "geonfak76@gmail.com"
+    console.log(process.env.GITHUB_EMAIL)
+
+    return process.env.GITHUB_EMAIL as string;
 }
 function getDefaultCommitMsg() {
     return "Initializing Github Repository with DevAutom and OpenAPI online"
@@ -95,6 +99,8 @@ function getDefaultCommitMsg() {
 const repo = "FinDecisionMaker"
 
 async function uploadFileToGithub(path: string, content: string) {
+    //if i want it to be on the root folder from the path i should remove the first name in the path
+    // java-client/{path}.split() .....
     console.log("Uploading file to github in path: ", path)
     const message = getDefaultCommitMsg()
     const authToken = getAuthToken();

@@ -19,7 +19,7 @@ function generatePromptContent(userinput: UserInputToGenerateSoftwareTitle) {
     `
 }
 //put this in a path variable
-const openai = new OpenAI({ apiKey: "sk-proj-FNKSXB9Cr0GHR2GhZMWZT3BlbkFJ83v1vz4n0AJ3HU6c20n2" })
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY })
 export async function POST(request: Request) {
     const userInput: UserInputToGenerateSoftwareTitle = await request.json();
     console.log("User input: ", userInput)

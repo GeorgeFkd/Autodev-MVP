@@ -1,5 +1,3 @@
-// https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api?apiVersion=2022-11-28
-// curl --request GET --url "https://api.github.com/octocat" --header "Authorization: Bearer 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"
 
 import { AppContext, Layout, Page } from "@/types/types";
 
@@ -18,10 +16,6 @@ interface GhCreateIssueRequest {
     user: string,
     repoUrl: string
 }
-
-//
-//curl -L -X POST -H "Accept: application/vnd.github_json" -H "Authorization: Bearer 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" -H "X-Github-Api-Version: 2022-11-28" https://api.github.com/repos/GeorgeFkd/FinDecisionMaker/issues -d '{"title":"Found a bug","body":"this app sucks"}'
-
 async function createGhIssue(authToken: string, issue: GhCreateIssueRequest) {
     // {
     //     message: 'Bad credentials',
@@ -145,11 +139,11 @@ export async function POST(request: Request) {
     console.log("Results from Repo Creation", body)
     const issuesRequests = issues.map(issue => ({ user, repoUrl: ghRepoUrl, data: issue }))
     console.log(`Creating ${issuesRequests.length} gh issues`);
-    // issuesRequests.forEach(async (issue) => {
-    //     const result = await createGhIssue(authToken, issue)
-    //     const body = await result.json();
-    //     console.log(body)
-    // })
+    issuesRequests.forEach(async (issue) => {
+        const result = await createGhIssue(authToken, issue)
+        const body = await result.json();
+        console.log(body)
+    })
 
     return Response.json({
         msg: "Dev blueprints were created successfully you can see it in: "
@@ -158,11 +152,11 @@ export async function POST(request: Request) {
 }
 
 function getUser() {
-    return "GeorgeFkd"
+    return process.env.GITHUB_USER as string;
 }
 
 function getAuthToken() {
-    return "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"
+    return process.env.GITHUB_TOKEN as string;
 }
 
 
