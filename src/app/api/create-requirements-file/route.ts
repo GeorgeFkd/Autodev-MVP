@@ -20,7 +20,7 @@ The components and their associated data are:
             const fromDateStr = fromDate?.toLocaleDateString ? fromDate?.toLocaleDateString() : fromDate;
             const toDateStr = toDate?.toLocaleDateString ? toDate?.toLocaleDateString() : toDate;
             return `
-#### Component Name: ${component.componentName}
+#### Component Name: ${component.component.componentName}
 Component Data(OpenAPI Operation from the URL): ${component.data.description}
 Frequency to be stored in the database: ${component.data.frequency}
 The required time range is from: ${fromDateStr} to ${toDateStr}

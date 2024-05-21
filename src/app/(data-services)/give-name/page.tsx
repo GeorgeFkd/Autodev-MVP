@@ -42,6 +42,7 @@ function GiveNameToSoftwarePage() {
     }
 
     const continueToNextPage = () => {
+        submitTitle()
         if (appState?.appType == SupportedSoftware.DATA_SERVICES) {
             router.push("/data-services")
             return;

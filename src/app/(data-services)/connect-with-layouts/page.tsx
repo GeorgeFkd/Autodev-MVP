@@ -4,8 +4,8 @@ import ModalUserOption from '@/components/ModalUserOption';
 import ResizableBox from '@/components/ResizableBox';
 import { useGlobalState } from '@/contexts/AppContext'
 import { useGoHome } from '@/hooks/useGoHome';
-import { ApiData, ApiDataComponent, Layout, Page, StatisticalGraphType } from '@/types/types';
-import { ChevronDownIcon, PlusSquareIcon } from '@chakra-ui/icons';
+import { ApiData, ApiDataComponent, ComponentInLayout, Layout, Page, StatisticalGraphType } from '@/types/types';
+import { ChevronDownIcon, DeleteIcon, PlusSquareIcon } from '@chakra-ui/icons';
 import { chakra, Button, Flex, IconButton, Menu, MenuButton, MenuItem, MenuList, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
@@ -31,7 +31,7 @@ interface Row {
 
 
 
-const defaultBox = { width: 450, height: 450, position: 0, dataSource: "", graphType: StatisticalGraphType.BarGraph, label: "Label" }
+const defaultBox = { width: 450, height: 450, position: 0, dataSource: "", graphType: StatisticalGraphType.BarGraph, label: "Label0" }
 function AssociateDataSourcesWithLayoutsPage() {
     useGoHome({ condition: (state) => state == null || !state?.selectedApiData || state?.selectedApiData.length === 0 })
     const toast = useToast();
@@ -58,9 +58,24 @@ function AssociateDataSourcesWithLayoutsPage() {
 
     const addBox = (rowId: number) => {
         const newRows = [...rows];
-        newRows[rowId].boxes.push(defaultBox);
+        const newLabel = "label" + rows.reduce((acc, current) => {
+            return acc + current.boxes.length;
+        }, 0)
+        //this is wrong the position should be different
+        const newBox = { ...defaultBox, label: newLabel, position: newRows[rowId].boxes.length };
+
+        newRows[rowId].boxes.push(newBox);
         console.log("New rows: ", newRows)
         setRows(newRows);
+    }
+
+    const deleteBox = (rowId: number, colId: number) => {
+        console.log("Deleting box at row: ", rowId, " and column: ", colId)
+        const newRows = [...rows]
+        //the second map is needed to fix the position after removing elements
+        const newRow = newRows[rowId].boxes.filter((b) => b.position !== colId).map((box, index) => { return { ...box, position: index } })
+        newRows[rowId].boxes = newRow
+        setRows(newRows)
     }
 
     const addRow = () => {
@@ -88,10 +103,11 @@ function AssociateDataSourcesWithLayoutsPage() {
             areas: templateAreas,
             components: componentNames,
         }
-        const apiDataComponents: ApiDataComponent[] = rows.map(row => row.boxes.map(box => {
+        const apiDataComponents: ApiDataComponent[] = rows.map((row, index) => row.boxes.map(box => {
             const data = appState?.selectedApiData.find(apiData => apiData.description === box.dataSource) as ApiData;
             data.graph = box.graphType;
-            return { data, componentName: box.label }
+            const component: ComponentInLayout = { componentName: box.label, column: box.position, row: index, sizeX: box.width, sizeY: box.height }
+            return { data, component }
         })).flat();
         const page: Page = { layout, pageName, associatedData: apiDataComponents }
         //@ts-expect-error
@@ -130,6 +146,8 @@ function AssociateDataSourcesWithLayoutsPage() {
 
     const showModalForUserAction = () => {
         console.log("User has finished with all pages")
+        //used so i dont have to click save page when im done
+        savePage(false)
         setIsModalOpen(true);
     }
 
@@ -178,7 +196,9 @@ function AssociateDataSourcesWithLayoutsPage() {
                     {row.boxes.map((box, index) => {
                         return <ResizableBox key={index + box.label} width={box.width} height={box.height} setHeight={(height) => changeBox(rowIndex, index, { height })} setWidth={(width) => changeBox(rowIndex, index, { width })}>
                             <Flex w="100%" h="100%" flexDir="column">
-                                <EditableSpan text={box.label} setText={(text) => changeBox(rowIndex, index, { label: text })} />
+                                <Flex w="100%" px="1rem" justifyContent={"space-between"} alignItems={"center"}> <EditableSpan text={box.label} setText={(text) => changeBox(rowIndex, index, { label: text })} />
+                                    <IconButton onClick={() => deleteBox(rowIndex, index)} aria-label="delete-box" icon={<DeleteIcon />}></IconButton>
+                                </Flex>
                                 <Flex flexDir="row" justifyContent="space-between">
                                     {/* dropdown for data source */}
                                     <ChooseGraphType setGraphType={(graphType) => changeBox(rowIndex, index, { graphType })} graphType={box.graphType} />
@@ -186,6 +206,7 @@ function AssociateDataSourcesWithLayoutsPage() {
                                     <ChooseDataSource setDataSource={(dataSource) => changeBox(rowIndex, index, { dataSource })} dataSource={box.dataSource} availableOptions={availableOptions} />
 
                                 </Flex>
+                                {/* this should be memoised only change when type width or height change*/}
                                 <RenderChart graphType={box.graphType} width={box.width * 0.7} height={box.height * 0.5} />
                             </Flex>
                         </ResizableBox>
@@ -494,7 +515,7 @@ function EditableSpan({ setText, text }: EditableSpanProps) {
         setText(editedText);
     }
 
-    return <chakra.div p="1rem" w="70%">
+    return <chakra.div py="1rem" w="70%">
         {isBeingEdited ? <input type="text" value={editedText} onChange={(e) => handleChange(e.target.value)} onBlur={handleBlur}
             ref={ref}
             autoFocus

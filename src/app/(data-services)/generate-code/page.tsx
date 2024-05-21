@@ -2,20 +2,36 @@
 import Container from '@/components/Container';
 import { useGlobalState } from '@/contexts/AppContext'
 import React, { useEffect, useState } from 'react'
-import { Button, Menu, MenuButton, MenuItem, MenuList, chakra } from "@chakra-ui/react"
+import { Button, Code, Menu, MenuButton, MenuItem, MenuList, chakra } from "@chakra-ui/react"
 import { ArrowDownIcon } from "@chakra-ui/icons"
+
+
+enum CodeGenSteps {
+    GenerateBlueprints,
+    GenerateCode,
+    NotYetStarted,
+    FinishedFailure,
+    FinishedSuccessfully
+}
+function getMessageOfStep(step: CodeGenSteps) {
+    if (step === CodeGenSteps.GenerateBlueprints) return "Generating Blueprints"
+    if (step === CodeGenSteps.GenerateCode) return "Generating Code"
+    if (step === CodeGenSteps.NotYetStarted) return ""
+    if (step === CodeGenSteps.FinishedFailure) return "The process has failed, you can retry and then contact the administrator"
+    if (step === CodeGenSteps.FinishedSuccessfully) return "The process has finished successfully, you just saved 2weeks of development time"
+}
 
 function GenerateCodePage() {
     const { appState, dispatch } = useGlobalState();
     const [availableLanguages, setAvailableLanguages] = useState([""])
     const [selectedLanguage, setSelectedLanguage] = useState("");
-    const [isLoading, setIsLoading] = useState(false)
+    const [currentStateOfGeneration, setCurrentStateOfGeneration] = useState({ loading: false, currentStep: CodeGenSteps.NotYetStarted })
     const generateTheCode = () => {
         if (!appState?.inputUrl || appState?.inputUrl === "some weird page") {
             console.log("Skipping code generation request")
             return;
         }
-        setIsLoading(true)
+        setCurrentStateOfGeneration({ loading: true, currentStep: CodeGenSteps.GenerateCode })
         fetch("/api/openapi-gen", {
             method: "POST",
             headers: {
@@ -27,20 +43,37 @@ function GenerateCodePage() {
                 options: {},
                 spec: {}
             })
-        }).then((response) => {
-            return response.json()
+        })
+            .then((response) => {
+                return response.json()
+            }).then((data) => {
+                setCurrentStateOfGeneration({ loading: false, currentStep: CodeGenSteps.FinishedSuccessfully })
+                //instead of that i should just return the url of the repo created and the issues page.
+                // const downloadLink = data.link;
+                // console.log("Download link: ", downloadLink)
+                // window.open(downloadLink, "_blank")
+            })
+    }
+    const initializeGithubRepoAndUploadCode = () => {
+        if (!appState?.inputUrl || appState?.inputUrl === "some weird page") {
+            console.log("Skipping code generation request")
+            return;
+        }
+        setCurrentStateOfGeneration({ loading: true, currentStep: CodeGenSteps.GenerateBlueprints })
+        fetch("/api/init-git-repo", {
+            method: "POST",
+            body: JSON.stringify(appState)
         }).then((data) => {
-            setIsLoading(false)
-            const downloadLink = data.link;
-            console.log("Download link: ", downloadLink)
-            window.open(downloadLink, "_blank")
+            return data.json()
+        }).then((val) => {
+            console.log("Final Val is: ", val)
+            generateTheCode()
         })
     }
 
 
     useEffect(() => {
         let ignore = false;
-        //for some reason this does not work in production
         if (!ignore) {
             fetch("/api/openapi-langs").then((response) => {
                 return response.json() as Promise<string[]>
@@ -77,9 +110,18 @@ function GenerateCodePage() {
                     })}
                 </MenuList>
             </Menu>
-            <Button onClick={() => generateTheCode()} isLoading={isLoading}>Submit</Button>
+            {currentStateOfGeneration.currentStep !== CodeGenSteps.NotYetStarted ? <ProgressMessage step={currentStateOfGeneration.currentStep} /> : <></>}
+            <Button onClick={() => initializeGithubRepoAndUploadCode()} isLoading={currentStateOfGeneration.loading}>Generate Dev Blueprints</Button>
         </Container>
     )
+}
+
+interface ProgressMessageProps {
+    step: CodeGenSteps
+}
+
+function ProgressMessage({ step }: ProgressMessageProps) {
+    return <chakra.span>{getMessageOfStep(step)}</chakra.span>
 }
 
 export default GenerateCodePage

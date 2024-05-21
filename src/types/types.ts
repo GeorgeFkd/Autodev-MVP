@@ -52,9 +52,18 @@ export interface Layout {
     components: ComponentsInGrid;
 }
 
+export interface ComponentInLayout {
+    componentName: string;
+    row: number;
+    column: number;
+    //pixels
+    sizeX: number;
+    sizeY: number;
+}
+
 export interface ApiDataComponent {
     data: ApiData,
-    componentName: string,
+    component: ComponentInLayout,
 }
 
 
