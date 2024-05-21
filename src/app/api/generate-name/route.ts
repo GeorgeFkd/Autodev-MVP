@@ -1,5 +1,3 @@
-//here i will make the request to openAI and process the stuff
-
 import OpenAI from "openai"
 
 
