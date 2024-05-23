@@ -32,7 +32,7 @@ function DataServicesPage() {
         console.log("Submitting URL: ", userInp)
         //@ts-expect-error
         dispatch({ type: "set-url", payload: userInp })
-        verifyOpenAPIUrl(appState?.inputUrl);
+        verifyOpenAPIUrl(userInp);
     }
 
     const verifyOpenAPIUrl = (inputUrl: string | undefined) => {

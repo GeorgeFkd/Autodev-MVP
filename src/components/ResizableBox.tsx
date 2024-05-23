@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { chakra } from "@chakra-ui/react"
 
 interface ResizableBoxProps {
@@ -7,47 +7,47 @@ interface ResizableBoxProps {
     setWidth: (width: number) => void,
     setHeight: (height: number) => void,
     children: React.ReactNode,
+    normaliseByX: number,
+    normaliseByY: number
 
 }
 
-function ResizableBox({ width, height, setWidth, setHeight, children }: ResizableBoxProps) {
+function ResizableBox({ width, height, setWidth, setHeight, children, normaliseByX, normaliseByY }: ResizableBoxProps) {
+    const [drag, setDrag] = useState({ active: false, x: -1, y: -1 })
+
     console.log("Rerendering")
-    useEffect(() => {
-        const handleResize = () => {
+    const handleMouseMove = (e: MouseEvent) => {
+        if (e.buttons === 1) {
+
             console.log("Setting new width and height")
-            //to not trigger a rerender when it covers the whole screen
-            //should only respond to the user dragging it
-            if (Math.abs(window.innerWidth - width) > 30 && Math.abs(window.innerHeight - height) > 30) return;
-            setWidth(window.innerWidth);
-            setHeight(window.innerHeight);
+            console.log("Existing: ", width, height)
+            console.log("New: ", e.clientX, e.clientY)
+            //the problem is that clientX and Y is dependent on the position of the screen
+            console.log("Normalizing By: ", normaliseByX, normaliseByY)
+            const newW = Math.abs(e.clientX - normaliseByX)
+            const newH = Math.abs(e.clientY - normaliseByY)
+            setWidth(newW)
+            setHeight(newH)
         }
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        }
-    }, [])
+    }
+    const handleMouseDown = (event: MouseEvent) => {
+        setDrag({
+            active: true,
+            x: event.clientX,
+            y: event.clientY
+        })
+    }
 
-    const handleMouseDown = () => {
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-    };
 
-    const handleMouseMove = (event: MouseEvent) => {
-        if (event.buttons === 1) {
-            console.log("Setting new width and height")
-            setWidth(event.clientX);
-            setHeight(event.clientY);
-        }
-    };
 
-    const handleMouseUp = () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-    };
+    const handleMouseUp = (event: MouseEvent) => {
+        setDrag({ ...drag, active: false })
+    }
 
 
     return (
-        <chakra.div onMouseUp={handleMouseUp} onMouseDown={handleMouseDown} resize={"both"} border="3px solid green" w={width} h={height} overflow={"hidden"}>{children}</chakra.div>
+        //@ts-ignore
+        <chakra.div onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseDown={handleMouseDown} resize={"both"} border="3px solid green" w={width + "px"} h={height + "px"} overflow={"hidden"}>{children}</chakra.div>
     )
 }
 

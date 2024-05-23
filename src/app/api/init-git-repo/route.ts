@@ -1,5 +1,5 @@
 
-import { AppContext, Layout, Page } from "@/types/types";
+import { AppContext, Page } from "@/types/types";
 
 
 
@@ -35,8 +35,6 @@ interface GhCreateRepoRequest {
     private: boolean;
     is_template: boolean;
 }
-//this works, im doing sth wrong below
-// curl -L -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer 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" -H "X-Github-Api-Version: 2022-11-28" https://api.github.com/user/repos -d '{"name":"FinDecisionMaker","description":"this is your first repo!","homepage":"https://github.com","private":false,"is_template":true}'
 async function createGhRepo(authToken: string, repoInfo: GhCreateRepoRequest) {
     //epistrefei ena html_url pou tha mporousa na xrhsimopoihsw gia na deiksw auto pou kanw
     //kai alla xrhsima pragmata
@@ -53,8 +51,6 @@ async function createGhRepo(authToken: string, repoInfo: GhCreateRepoRequest) {
 
 
 function layoutDescriptionForIssueBody(pageData: Page) {
-    //Βασικά να κάνω κάτι του τύπου Component X-> Row Y,Column Z,Size K*px
-    //Then the developer translates it into proportions
     return `
 ${pageData.associatedData.map(data => {
         return `
@@ -119,19 +115,33 @@ function normalizeStringForGhRepoName(name: string) {
 
 export async function POST(request: Request) {
     //the widths and heights i get seem a bit big
+    const authToken = getAuthToken();
+    if (!authToken) {
+        return Response.json({ success: false, msg: "Auth token was not provided" })
+    }
+    const user = getUser()
+    if (!user) {
+        return Response.json({ success: false, msg: "User was not provided" })
+    }
+
     const data: AppContext = await request.json();
     console.log("Initializing Git Repo with: ", data)
-    const authToken = getAuthToken();
-    const issues = data.pages.map((page) => createIssueFromPage(page, data.inputUrl))
+
+
+
     const ghRepoUrl = normalizeStringForGhRepoName(data.appName);
-    const user = getUser()
-    //also i can generate a description for the repo based on the general info i have
-    const ghCreateRepoReq: GhCreateRepoRequest = { name: ghRepoUrl, description: "Insert your custom description here", homepage: "https://github.com", private: false, is_template: false }
-    //i should be getting the data for this
+    const ghDescription = "Insert your custom description here"
+    //also i can generate a description for the repo based on the general info i have(with ChatGPT)
+    const ghCreateRepoReq: GhCreateRepoRequest = { name: ghRepoUrl, description: ghDescription, homepage: "https://github.com", private: false, is_template: false }
     console.log("Creating GH Repo with name: ", ghRepoUrl)
     const result = await createGhRepo(authToken, ghCreateRepoReq)
+    if (!result.ok) {
+        return Response.json({ success: false, msg: "Github Repo creation was unsuccessfull" })
+    }
     const body = await result.json();
     console.log("Results from Repo Creation", body)
+
+    const issues = data.pages.map((page) => createIssueFromPage(page, data.inputUrl))
     const issuesRequests = issues.map(issue => ({ user, repoUrl: ghRepoUrl, data: issue }))
     console.log(`Creating ${issuesRequests.length} gh issues`);
     issuesRequests.forEach(async (issue) => {
@@ -141,17 +151,18 @@ export async function POST(request: Request) {
     })
 
     return Response.json({
+        success: true,
         msg: "Dev blueprints were created successfully you can see it in: "
     })
 
 }
 
 function getUser() {
-    return process.env.GITHUB_USER as string;
+    return process.env.GITHUB_USER;
 }
 
 function getAuthToken() {
-    return process.env.GITHUB_TOKEN as string;
+    return process.env.GITHUB_TOKEN;
 }
 
 

@@ -48,6 +48,11 @@ function AssociateDataSourcesWithLayoutsPage() {
 
 
     const changeBox = (rowId: number, boxId: number, newBox: Partial<Box>) => {
+        if (newBox.height) {
+            console.log("Changing for height")
+        } else if (newBox.width) {
+            console.log("Changing it for width")
+        }
         console.log("Changing it to: ", newBox)
         const newRows = [...rows];
         const currentBox = newRows[rowId].boxes[boxId];
@@ -176,7 +181,13 @@ function AssociateDataSourcesWithLayoutsPage() {
         console.log("Going to /generate-code")
         router.push("/generate-code")
     }
-
+    const getHeightOfRest = (pos: number) => {
+        return rows.filter((el, index) => index < pos).map(r => {
+            return Math.max(...r.boxes.map(b => b.height))
+        }).reduce((acc, curr) => {
+            return acc + curr
+        }, 0)
+    }
 
     console.log("Page name is: ", pageName)
     return (
@@ -192,11 +203,17 @@ function AssociateDataSourcesWithLayoutsPage() {
                 </Flex>
             </ModalUserOption>
             {rows.map((row, rowIndex) => {
+                const getWidthOfRest = (pos: number) => {
+                    return row.boxes.filter((el, index) => index < pos).reduce((acc, curr) => acc + curr.width, 0)
+                }
+
+
                 return <Flex key={row.id + " " + rowIndex} flexDir="row" wrap="nowrap" columnGap="1rem">
                     {row.boxes.map((box, index) => {
-                        return <ResizableBox key={index + box.label} width={box.width} height={box.height} setHeight={(height) => changeBox(rowIndex, index, { height })} setWidth={(width) => changeBox(rowIndex, index, { width })}>
+                        return <ResizableBox normaliseByX={getWidthOfRest(index)} normaliseByY={getHeightOfRest(rowIndex)} key={index + box.label} width={box.width} height={box.height} setHeight={(height) => changeBox(rowIndex, index, { height })} setWidth={(width) => changeBox(rowIndex, index, { width })}>
                             <Flex w="100%" h="100%" flexDir="column">
-                                <Flex w="100%" px="1rem" justifyContent={"space-between"} alignItems={"center"}> <EditableSpan text={box.label} setText={(text) => changeBox(rowIndex, index, { label: text })} />
+                                <Flex w="100%" px="1rem" justifyContent={"space-between"} alignItems={"center"}>
+                                    <EditableSpan text={box.label} setText={(text) => changeBox(rowIndex, index, { label: text })} />
                                     <IconButton onClick={() => deleteBox(rowIndex, index)} aria-label="delete-box" icon={<DeleteIcon />}></IconButton>
                                 </Flex>
                                 <Flex flexDir="row" justifyContent="space-between">
@@ -206,8 +223,9 @@ function AssociateDataSourcesWithLayoutsPage() {
                                     <ChooseDataSource setDataSource={(dataSource) => changeBox(rowIndex, index, { dataSource })} dataSource={box.dataSource} availableOptions={availableOptions} />
 
                                 </Flex>
+                                <RenderChart graphType={box.graphType} width={box.width * 0.65} height={box.height * 0.5} />
+
                                 {/* this should be memoised only change when type width or height change*/}
-                                <RenderChart graphType={box.graphType} width={box.width * 0.7} height={box.height * 0.5} />
                             </Flex>
                         </ResizableBox>
                     })}
@@ -230,6 +248,7 @@ interface FakeChartProps {
     height: number,
 
 }
+
 
 function RenderChart({ graphType, width, height }: FakeChartProps) {
     if (graphType === StatisticalGraphType.BarGraph) {
