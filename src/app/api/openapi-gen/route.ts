@@ -1,9 +1,6 @@
 import { NextRequest } from "next/server"
 import unzipper from 'unzipper';
-import { pipeline } from "stream";
-import { promisify } from "util";
 import { Readable } from 'stream';
-const pipelineAsync = promisify(pipeline)
 type CodegenInput = {
     openAPIUrl: string,
     language: string,

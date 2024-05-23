@@ -17,12 +17,7 @@ interface GhCreateIssueRequest {
     repoUrl: string
 }
 async function createGhIssue(authToken: string, issue: GhCreateIssueRequest) {
-    // {
-    //     message: 'Bad credentials',
-    //         documentation_url: 'https://docs.github.com/rest'
-    // } i am getting this for some reason im doing sth wrong ^
     const url = `https://api.github.com/repos/${issue.user}/${issue.repoUrl}/issues`
-    console.log("")
     const headers = { "Authorization": `Bearer ${authToken}`, "X-Github-Api-Version": "2022-11-28", "Accept": "application/vnd.github+json" }
     const body = JSON.stringify({ title: issue.data.title, body: issue.data.body, labels: ["feature"] })
     console.log("Sending to github issues API: ", body)
