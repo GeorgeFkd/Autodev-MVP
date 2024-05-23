@@ -88,4 +88,9 @@ export interface AppContext {
     appType: SupportedSoftware
 }
 
+export enum OASValidationResult {
+    Success,
+    Failure, Loading
+}
+
 

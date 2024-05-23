@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     // probably should reroute this through my own api
+    //also do CORS properly only allow certain domains not *
     async headers() {
         return [
             {

@@ -63,7 +63,6 @@ function GiveNameToSoftwarePage() {
             <Textarea placeholder="Describe your software" w="45%" h="40%" value={softwareDescription} onChange={(e) => setSoftwareDescription(e.target.value)} />
             <Button variant="outline" isLoading={isLoading} onClick={() => generateTitleWithAi(appState?.appType, softwareDescription)}>Generate Using AI</Button>
             <Input size="lg" w="35%" value={softwareName} onChange={(e) => setSoftwareName(e.target.value)} placeholder='Write a name here or give a description above for your Copilot' />
-            <Button variant="outline" onClick={() => submitTitle()}>Submit Software Name</Button>
             <Button rightIcon={<ArrowRightIcon />} onClick={continueToNextPage}>Continue Creating {appState?.appType} Software</Button>
         </Container>
     )
