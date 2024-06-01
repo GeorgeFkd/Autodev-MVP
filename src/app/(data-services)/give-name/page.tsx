@@ -91,7 +91,7 @@ function GiveNameToSoftwarePage() {
                 <Flex flexDir="column" rowGap="1rem">
                     <TextMD text='Write a name here or give a description above for your Copilot' />
                     <Input size="lg" htmlSize={25} w="auto" value={softwareName} onChange={(e) => setSoftwareName(e.target.value)} placeholder={placeholderValueForSoftwareType(appState?.appType)} />
-                    {suggestedSoftwareNames.map(suggestion => (<UserSuggestion suggestion={suggestion} />))}
+                    {suggestedSoftwareNames.map(suggestion => (<UserSuggestion key={suggestion} suggestion={suggestion} />))}
                 </Flex>
 
             </GridItem>

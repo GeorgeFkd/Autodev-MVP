@@ -1,5 +1,7 @@
 
 import { AppContext, Page } from "@/types/types";
+import OpenAI from "openai"
+
 
 
 
@@ -111,6 +113,36 @@ function normalizeStringForGhRepoName(name: string) {
     return name;
 }
 
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY })
+
+
+function generatePromptContent(data:AppContext){
+    return `
+    We are creating software with a custom tool and we are helping the user create it from scratch.
+    You will always answer with the json format you were provided.
+    I will provide you with data from the user for the app he wants to create.
+    I want you to provide me a good and concise description of the app he wants to create.
+    The name of the app is: ${data.appName}
+    The type of the app is: ${data.appType}
+    For each sentence i want you to add a newline \n so it is more readable.
+    Do not make it more than 2 sentences
+    Return it in the form of {description:string}
+    `
+}
+
+async function generateGithubRepoDescriptionFromAI(userInput:AppContext){
+    const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        response_format: { "type": "json_object" },
+        messages: [{ role: "system", content: generatePromptContent(userInput) }]
+    })
+
+    const answer = completion.choices[0].message.content as string;
+    const jsonAnswer = JSON.parse(answer)
+    const finalAnswer = jsonAnswer.description
+    return finalAnswer
+
+}
 
 
 export async function POST(request: Request) {
@@ -127,13 +159,12 @@ export async function POST(request: Request) {
     const data: AppContext = await request.json();
     console.log("Initializing Git Repo with: ", data)
 
-
-
     const ghRepoUrl = normalizeStringForGhRepoName(data.appName);
-    const ghDescription = "Insert your custom description here"
-    //also i can generate a description for the repo based on the general info i have(with ChatGPT)
+    const ghDescription = await generateGithubRepoDescriptionFromAI(data)
     const ghCreateRepoReq: GhCreateRepoRequest = { name: ghRepoUrl, description: ghDescription, homepage: "https://github.com", private: false, is_template: false }
     console.log("Creating GH Repo with name: ", ghRepoUrl)
+    console.log("Description of the GH Repo: ",ghDescription)
+
     const result = await createGhRepo(authToken, ghCreateRepoReq)
     if (!result.ok) {
         return Response.json({ success: false, msg: "Github Repo creation was unsuccessfull" })
@@ -152,6 +183,7 @@ export async function POST(request: Request) {
 
     return Response.json({
         success: true,
+        urlOfRepo:ghRepoUrl,
         msg: "Dev blueprints were created successfully you can see it in: "
     })
 

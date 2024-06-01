@@ -13,6 +13,14 @@ enum CodeGenSteps {
     FinishedFailure,
     FinishedSuccessfully
 }
+
+interface GitRepoResponse {
+    success: boolean,
+    urlOfRepo: string,
+    msg: string
+}
+
+
 function getMessageOfStep(step: CodeGenSteps) {
     if (step === CodeGenSteps.GenerateBlueprints) return "Generating Blueprints"
     if (step === CodeGenSteps.GenerateCode) return "Generating Code"
@@ -26,7 +34,7 @@ function GenerateCodePage() {
     const [availableLanguages, setAvailableLanguages] = useState([""])
     const [selectedLanguage, setSelectedLanguage] = useState("");
     const [currentStateOfGeneration, setCurrentStateOfGeneration] = useState({ loading: false, currentStep: CodeGenSteps.NotYetStarted })
-    const generateTheCode = () => {
+    const generateTheCode = (inGhRepo: string) => {
         if (!appState?.inputUrl || appState?.inputUrl === "some weird page") {
             console.log("Skipping code generation request")
             return;
@@ -41,7 +49,8 @@ function GenerateCodePage() {
                 openAPIUrl: appState?.inputUrl,
                 language: selectedLanguage,
                 options: {},
-                spec: {}
+                spec: {},
+                ghRepoUrl: inGhRepo
             })
         })
             .then((response) => {
@@ -64,10 +73,10 @@ function GenerateCodePage() {
             method: "POST",
             body: JSON.stringify(appState)
         }).then((data) => {
-            return data.json()
+            return data.json() as Promise<GitRepoResponse>
         }).then((val) => {
             console.log("Final Val is: ", val)
-            generateTheCode()
+            generateTheCode(val.urlOfRepo)
         })
     }
 
