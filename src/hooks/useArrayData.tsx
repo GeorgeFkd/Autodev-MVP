@@ -31,7 +31,9 @@ function useArrayData<T>({ initialData = [] }: { initialData: T[] }) {
         setData(newArr);
     }
 
-    return { data, addDataFront, addData, editElementAt, deleteElementAt, deleteElemThat }
+
+
+    return { data, setData, addDataFront, addData, editElementAt, deleteElementAt, deleteElemThat }
 
 }
 

@@ -1,4 +1,4 @@
-import { SupportedSoftware, type ApiData, type AppContext, type DataFromOpenAPIUrl, type GeneralWebsiteUrl, type Layout, type OpenAPIUrl, type Page, type SelectedApiData } from "@/types/types";
+import { SupportedSoftware, type ApiData, type AppContext, type DataFromOpenAPIUrl, type GeneralWebsiteUrl, type Layout, type OpenAPIUrl, type Page, type SelectedApiData, AnalyticsDataType } from "@/types/types";
 //i need some typing generally
 
 
@@ -64,10 +64,22 @@ export default function appReducer(app: AppContext, action: AllActions): AppCont
 
     if (action.type === "set-api-data-with-metadata") {
         //@ts-expect-error
-        const payload: SelectedApiData = action.payload;
+        const payload: ApiData[] = action.payload;
         return {
             ...app,
             selectedApiData: payload
+        }
+    }
+
+    if (action.type === "set-api-data-analytics-types-ai") {
+        //@ts-expect-error
+        const payload: AnalyticsDataType[] = action.payload
+
+        const newSelectedApiData = app.selectedApiData.map((d, index) => ({ ...d, analyticsDataType: payload[index] }))
+        console.log("With analytics AI it is: ", newSelectedApiData)
+        return {
+            ...app,
+            selectedApiData: newSelectedApiData
         }
     }
 

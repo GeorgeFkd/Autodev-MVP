@@ -35,6 +35,7 @@ export interface MetadataForData {
     frequency?: Frequency
     range?: TimeRange
     graph?: StatisticalGraphType
+    analyticsDataType: AnalyticsDataType
 }
 export type ApiData = (DataFromOpenAPIUrl & MetadataForData)
 export type SelectedApiData = ApiData[]
@@ -86,6 +87,12 @@ export interface AppContext {
     pages: Page[];
     appName: string;
     appType: SupportedSoftware
+}
+
+export enum AnalyticsDataType {
+    REALTIME = "Real time",
+    HISTORICAL = "Historical",
+    NONE="Analytics Data Type"
 }
 
 export enum OASValidationResult {

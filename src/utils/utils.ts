@@ -1,4 +1,4 @@
-import { Frequency } from "@/types/types";
+import { Frequency, AnalyticsDataType, MetadataForData } from "@/types/types";
 
 
 export function downloadFile(val: Blob, filename: string) {
@@ -43,8 +43,22 @@ export function fromFreqGetString(freq: Frequency | undefined): string {
     }
 }
 
+export function fromAnalyticsDataTypeGetString(d: AnalyticsDataType) {
+    console.log("AnalyticsDataType->String", d)
+    if (d === AnalyticsDataType.HISTORICAL) return "Historical"
+    if (d === AnalyticsDataType.REALTIME) return "Real time"
+    return "Analytics Type"
+}
+
+export function fromStringGetAnalyticsDataType(data: string) {
+    console.log("String->AnalyticsDataType", data)
+    if (data === "HISTORICAL" || data === "Historical") return AnalyticsDataType.HISTORICAL
+    if (data === "REALTIME" || data === "Real time") return AnalyticsDataType.REALTIME
+    return AnalyticsDataType.NONE
+}
+
 //probably not the correct place to put this
-export function defaultMetadataForDataSources(length: number) {
-    return new Array(length).fill({ range: { from: Date(), to: Date() }, frequency: "" })
+export function defaultMetadataForDataSources(length: number):MetadataForData[] {
+    return new Array(length).fill({ range: { from: Date(), to: Date() }, frequency: "",analyticsDataType:AnalyticsDataType.NONE })
 
 }
