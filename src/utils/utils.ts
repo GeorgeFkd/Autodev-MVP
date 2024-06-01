@@ -58,7 +58,18 @@ export function fromStringGetAnalyticsDataType(data: string) {
 }
 
 //probably not the correct place to put this
-export function defaultMetadataForDataSources(length: number):MetadataForData[] {
-    return new Array(length).fill({ range: { from: Date(), to: Date() }, frequency: "",analyticsDataType:AnalyticsDataType.NONE })
+export function defaultMetadataForDataSources(length: number): MetadataForData[] {
+    return new Array(length).fill({ range: { from: new Date(), to: new Date() }, frequency: "", analyticsDataType: AnalyticsDataType.NONE })
 
+}
+
+
+export function formatDateForInputElem(date: Date | undefined) {
+    let theDate = date ? date : new Date();
+    const year = theDate.getFullYear();
+    const month = String(theDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const day = String(theDate.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+
+    return formattedDate
 }

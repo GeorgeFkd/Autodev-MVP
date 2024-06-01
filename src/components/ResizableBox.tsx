@@ -47,7 +47,7 @@ function ResizableBox({ width, height, setWidth, setHeight, children, normaliseB
 
     return (
         //@ts-ignore
-        <chakra.div onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseDown={handleMouseDown} resize={"both"} border="3px solid green" w={width + "px"} h={height + "px"} overflow={"hidden"}>{children}</chakra.div>
+        <chakra.div onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseDown={handleMouseDown} resize={"both"} border="3px solid grey" boxShadow="dark-lg" w={width + "px"} h={height + "px"} overflow={"hidden"}>{children}</chakra.div>
     )
 }
 

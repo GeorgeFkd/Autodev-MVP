@@ -1,4 +1,4 @@
-import { SupportedSoftware, type ApiData, type AppContext, type DataFromOpenAPIUrl, type GeneralWebsiteUrl, type Layout, type OpenAPIUrl, type Page, type SelectedApiData, AnalyticsDataType } from "@/types/types";
+import { SupportedSoftware, type ApiData, type AppContext, type DataFromOpenAPIUrl, type GeneralWebsiteUrl, type Layout, type OpenAPIUrl, type Page, type SelectedApiData, AnalyticsDataType, MetadataForData } from "@/types/types";
 //i need some typing generally
 
 
@@ -22,6 +22,13 @@ type editPage = AppAction<string>;
 export const EMPTY_APP_CONTEXT: AppContext = { inputUrl: "some weird page", pages: [], selectedApiData: [], appName: "", appType: SupportedSoftware.NONE }
 
 export type AllActions = setUrlAction;
+
+
+interface ChangeMetadataInput {
+    index:number,
+    data:Partial<MetadataForData>
+}
+
 
 export default function appReducer(app: AppContext, action: AllActions): AppContext {
     if (action.type == "set-url") {
@@ -55,10 +62,25 @@ export default function appReducer(app: AppContext, action: AllActions): AppCont
         //@ts-expect-error
         const payloadFetched: DataFromOpenAPIUrl[] = action.payload;
         //@ts-expect-error
-        const apiDataWithoutMetadata: SelectedApiData = payloadFetched.map(o => ({ ...o, frequency: null, range: null }))
+        const apiDataWithoutMetadata: SelectedApiData = payloadFetched.map(o => ({ ...o, range: { from: new Date(), to: new Date() }, frequency: "",analyticsDataType:AnalyticsDataType.NONE }))
         return {
             ...app,
             selectedApiData: apiDataWithoutMetadata
+        }
+    }
+
+    if(action.type === "set-api-data-elem-with-metadata"){
+        //@ts-expect-error
+        const payload:ChangeMetadataInput = action.payload
+        const updatedApiData = app.selectedApiData
+        updatedApiData[payload.index] = {
+            ...(updatedApiData[payload.index]),
+            ...payload.data
+        }
+
+        return {
+            ...app,
+            selectedApiData:updatedApiData
         }
     }
 
