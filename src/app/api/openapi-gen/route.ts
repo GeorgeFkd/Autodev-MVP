@@ -2,19 +2,7 @@ import { NextRequest } from "next/server"
 import unzipper from 'unzipper';
 import { Readable } from 'stream';
 import path from "path"
-type CodegenInput = {
-    openAPIUrl: string,
-    language: string,
-    options: {},
-    spec: {},
-    ghRepoUrl:string
-}
-
-type CodegenResult = {
-    link: string,
-    code: string
-}
-
+import { CodegenInput, CodegenResult } from "@/types/types";
 
 function changeSrcPathTo(pathStr:string,newPath:string){
     const pathSegments = pathStr.split(path.sep)
@@ -22,32 +10,28 @@ function changeSrcPathTo(pathStr:string,newPath:string){
     const totalNewPath = pathSegments.join(path.sep)
     return totalNewPath
 }
-
-export async function POST(request: NextRequest) {
-    const userInput: CodegenInput = await request.json();
-
+async function GetFilesFromOASCodegenOnlineAnd(generatorInput:CodegenInput,willGenerateClient:boolean,doForEachFile:(filepath:string,filecontent:string)=>Promise<void>){
     const baseUrl = "http://api.openapi-generator.tech"
-    const operationUrl = "api/gen/clients"
-    //might need this for the openapi-normalizer stuff to exclude paths
-    const options = {}
-    const resultOfCodegen: CodegenResult = await fetch(`${baseUrl}/${operationUrl}/${userInput.language}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
+    const operationUrl = willGenerateClient ? "api/gen/clients" : "api/gen/servers"
+    const completeUrl = `${baseUrl}/${operationUrl}/${generatorInput.language}`
+    const resultOfCodegen:CodegenResult = await fetch(completeUrl,{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
         },
         body: JSON.stringify({
-            openAPIUrl: userInput.openAPIUrl,
-            options,
-            spec: {}
+            openAPIUrl:generatorInput.openAPIUrl,
+            options:generatorInput.options,
+            spec:generatorInput.spec
         })
+    }).then((response)=> {
+        console.log("Response received from API", response)
+        return response.json() as Promise<CodegenResult>
     })
-        .then((response) => {
-            console.log("Response received from API", response)
-            return response.json() as Promise<CodegenResult>
-        })
 
-    const { link } = resultOfCodegen;
+    const {link} = resultOfCodegen;
     console.log("Getting file from OpenAPI online server")
+
     try {
         const response = await fetch(link, {
             method: "GET",
@@ -59,41 +43,53 @@ export async function POST(request: NextRequest) {
         for await (const entry of zipStream) {
             const path = entry.props.path
             const content = await entry.buffer();
-            const customPath = changeSrcPathTo(path,"backend")
-            const result = await uploadFileToGithub(customPath, content.toString("base64"),userInput.ghRepoUrl)
-            if (!result.body) continue
-            const response = await result.json()
-            console.log("Api returned: ", response)
+            await doForEachFile(path,content.toString("base64"))
         }
     } catch (e) {
         console.log("error that happened", e)
     }
+    return resultOfCodegen
+}
 
+
+
+
+export async function POST(request: NextRequest) {
+    const userInput: CodegenInput & {ghRepoUrl:string} = await request.json();
+    const {language,openAPIUrl,options,spec} = userInput
+    const resultOfCodegen = GetFilesFromOASCodegenOnlineAnd({language,openAPIUrl,options,spec},true,async (filepath,filecontent)=>{
+        const customPath = changeSrcPathTo(filepath,"backend")
+        const result = await uploadFileToGithub(customPath, filecontent,userInput.ghRepoUrl)
+        const response = await result.json()
+        // console.log("Api returned: ", response)
+    })
 
     return Response.json(resultOfCodegen)
 }
 
 function getAuthToken() {
-    console.log(process.env.GITHUB_TOKEN)
+    // console.log(process.env.GITHUB_TOKEN)
     return process.env.GITHUB_TOKEN as string;
 }
 
 function getUser() {
-    console.log(process.env.GITHUB_USER)
+    // console.log(process.env.GITHUB_USER)
 
     return process.env.GITHUB_USER as string;
 }
 
 function getEmail() {
-    console.log(process.env.GITHUB_EMAIL)
+    // console.log(process.env.GITHUB_EMAIL)
 
     return process.env.GITHUB_EMAIL as string;
 }
 function getDefaultCommitMsg() {
     return "Initializing Github Repository with DevAutom and OpenAPI online"
 }
-
+//content should be base64
 async function uploadFileToGithub(path: string, content: string,ghRepoUrl:string) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     console.log("Uploading file to github in path: ", path)
     const message = getDefaultCommitMsg()
     const authToken = getAuthToken();

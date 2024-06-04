@@ -2,9 +2,6 @@
 import { AppContext, Page } from "@/types/types";
 import OpenAI from "openai"
 
-
-
-
 interface IssueData {
     title: string;
     body: string;
@@ -18,6 +15,7 @@ interface GhCreateIssueRequest {
     user: string,
     repoUrl: string
 }
+
 async function createGhIssue(authToken: string, issue: GhCreateIssueRequest) {
     const url = `https://api.github.com/repos/${issue.user}/${issue.repoUrl}/issues`
     const headers = { "Authorization": `Bearer ${authToken}`, "X-Github-Api-Version": "2022-11-28", "Accept": "application/vnd.github+json" }
@@ -37,6 +35,7 @@ interface GhCreateRepoRequest {
     private: boolean;
     is_template: boolean;
 }
+
 async function createGhRepo(authToken: string, repoInfo: GhCreateRepoRequest) {
     //epistrefei ena html_url pou tha mporousa na xrhsimopoihsw gia na deiksw auto pou kanw
     //kai alla xrhsima pragmata
@@ -51,13 +50,12 @@ async function createGhRepo(authToken: string, repoInfo: GhCreateRepoRequest) {
     })
 }
 
-
 function layoutDescriptionForIssueBody(pageData: Page) {
     return `
 ${pageData.associatedData.map(data => {
         return `
 - Component: ${data.component.componentName}, Column: ${data.component.column} Row: ${data.component.row}, Width: ${data.component.sizeX} Height: ${data.component.sizeY}`
-    })}
+    }).join("\n")}
 `
 }
 
@@ -68,7 +66,6 @@ function contentForIssueBody(pageData: Page, openAPIUrl: string): string {
     const formatDate = (obj: Date) => {
         return `${obj.getFullYear()}-${obj.getMonth()}-${obj.getDay()}-${obj.getHours()}`
     }
-
 
     return `
 ### Page Title: ${pageData.pageName}
@@ -87,7 +84,8 @@ ${pageData.associatedData.map(component => {
   - The required **time range** is from: ${fromDateStr} to ${toDateStr}
   - We want it to be displayed in a **${component.data.graph}**.
   - Should be in the **Row** No${component.component.row} and **Column** No${component.component.column} with **width**: ${component.component.sizeX} and **height**: ${component.component.sizeY}
-`})}
+`})
+.join("\n")}
 
 The layout should be done as follows:
 ${layoutDescriptionForIssueBody(pageData)}
@@ -110,7 +108,7 @@ function createIssueFromPage(pageData: Page, openAPIUrl: string): IssueData {
 
 function normalizeStringForGhRepoName(name: string) {
     //Might need to remove spaces and other stuff
-    return name;
+    return name.replace(" ","");
 }
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY })
@@ -124,7 +122,6 @@ function generatePromptContent(data:AppContext){
     I want you to provide me a good and concise description of the app he wants to create.
     The name of the app is: ${data.appName}
     The type of the app is: ${data.appType}
-    For each sentence i want you to add a newline \n so it is more readable.
     Do not make it more than 2 sentences
     Return it in the form of {description:string}
     `
@@ -167,7 +164,8 @@ export async function POST(request: Request) {
 
     const result = await createGhRepo(authToken, ghCreateRepoReq)
     if (!result.ok) {
-        return Response.json({ success: false, msg: "Github Repo creation was unsuccessfull" })
+        const body = await result.text()
+        return Response.json({ success: false, msg: "Github Repo creation was unsuccessfull",result:body })
     }
     const body = await result.json();
     console.log("Results from Repo Creation", body)
@@ -196,8 +194,3 @@ function getUser() {
 function getAuthToken() {
     return process.env.GITHUB_TOKEN;
 }
-
-
-//in the beginning i will do it on my own account and then for other's
-
-

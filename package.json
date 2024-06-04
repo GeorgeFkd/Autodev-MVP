@@ -19,6 +19,7 @@
     "adm-zip": "^0.5.12",
     "archiver": "^7.0.1",
     "framer-motion": "^11.1.7",
+    "fs": "^0.0.1-security",
     "next": "14.2.2",
     "next-auth": "^4.24.7",
     "openai": "^4.47.1",

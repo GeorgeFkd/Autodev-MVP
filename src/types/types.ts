@@ -78,7 +78,10 @@ export interface Page {
 export enum SupportedSoftware {
     E_COMMERCE = "E-Commerce",
     DATA_SERVICES = "Data Services",
-    NONE = "No Type"
+    NONE = "No Type",
+    WEB_BLOG = "Blog",
+    CLIENTELE_MANAGEMENT = "Clients Management System",
+    BUSINESS_PROCESS = "Process Automation"
 }
 
 export interface AppContext {
@@ -98,6 +101,19 @@ export enum AnalyticsDataType {
 export enum OASValidationResult {
     Success,
     Failure, Loading
+}
+
+export type CodegenInput = {
+    openAPIUrl: string,
+    language: string,
+    options: {},
+    spec: {},
+}
+
+
+export type CodegenResult = {
+    link: string,
+    code: string
 }
 
 

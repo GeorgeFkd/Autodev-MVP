@@ -66,8 +66,11 @@ function AssociateDataSourcesWithLayoutsPage() {
         const newLabel = "label" + rows.reduce((acc, current) => {
             return acc + current.boxes.length;
         }, 0)
-        //this is wrong the position should be different
-        const newBox = { ...defaultBox, label: newLabel, position: newRows[rowId].boxes.length };
+        //the dimension stuff doesnt work that well but it is something
+        const widthOfTheLastOne = newRows[rowId].boxes[newRows[rowId].boxes.length - 1].width
+        const heightOfTheLastOne = newRows[rowId].boxes[newRows[rowId].boxes.length - 1].height
+        console.log("Width and height of previous box", widthOfTheLastOne, heightOfTheLastOne)
+        const newBox = { ...defaultBox, label: newLabel, position: newRows[rowId].boxes.length, width: widthOfTheLastOne, height: heightOfTheLastOne };
 
         newRows[rowId].boxes.push(newBox);
         console.log("New rows: ", newRows)

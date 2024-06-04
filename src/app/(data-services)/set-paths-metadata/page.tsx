@@ -16,8 +16,8 @@ import {
     useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import type { MetadataForData, TimeRange } from "@/types/types";
+import React, { useEffect } from "react";
+import type { Frequency, MetadataForData, TimeRange } from "@/types/types";
 import { useGoHome } from "@/hooks/useGoHome";
 import {
     formatDateForInputElem,
@@ -27,6 +27,19 @@ import {
     fromStringGetFreq,
 } from "src/utils/utils";
 import { ChevronDownIcon } from "@chakra-ui/icons";
+
+function generateRandomFreqVals(length: number | undefined): Frequency[] {
+    if (length === undefined || length === null) return []
+    const keysOfEnum = Object.values(FrequencyVal)
+    const variantsNum = keysOfEnum.length;
+    let randomArr = []
+    for (let i = 0; i < variantsNum; i++) {
+        const randomIndex = Math.floor(Math.random() * variantsNum);
+        randomArr.push(randomIndex)
+    }
+    return randomArr.map(num => keysOfEnum[num])
+}
+
 
 function SetPathsMetadataPage() {
     useGoHome({
@@ -60,8 +73,9 @@ function SetPathsMetadataPage() {
                             return AnalyticsDataTypeVal.HISTORICAL;
                         }
                     });
+                    const frequencies = generateRandomFreqVals(appState?.selectedApiData.length)
                     const updatedApiData = appState?.selectedApiData.map((data, index) => {
-                        return { ...data, analyticsDataType: analyticsTypes[index] }
+                        return { ...data, analyticsDataType: analyticsTypes[index], frequency: frequencies[index] }
                     })
                     //@ts-expect-error
                     dispatch({ type: "set-api-data-with-metadata", payload: updatedApiData })
@@ -76,7 +90,7 @@ function SetPathsMetadataPage() {
         }
 
         return () => {
-            ignore = false;
+            ignore = true;
         };
     }, []);
 
@@ -162,20 +176,6 @@ function ApiPathComponent({
     labelAnalyticsType,
 }: EditApiPathProps) {
 
-    // const [dateState, setDateState] = useState<TimeRange>({ from: new Date(), to: new Date() })
-
-    // const [fromDate, setFromDate] = useState<string>(
-    //     DEFAULT_TIME_RANGE.from.toDateString()
-    // );
-    // const [toDate, setToDate] = useState<string>(
-    //     DEFAULT_TIME_RANGE.to.toDateString()
-    // );
-    // const setDates = (date:string,isFrom:boolean) => {
-    //     handleChange(index, {
-    //         range: { from: new Date(fromDate), to: new Date(toDate) },
-    //     });
-    // };
-
     console.log("For the api path component:", data, labelAnalyticsType);
     //++ add Validation that the two dates are properly set
     //fromDate is before toDate
@@ -192,7 +192,7 @@ function ApiPathComponent({
                 range: { to: new Date(date), from: data.range?.from }
             })
         }
-        // setDates();
+
     };
     return (
         <Flex
@@ -235,8 +235,6 @@ function ApiPathComponent({
                     })}
                 </MenuList>
             </Menu>
-            {/* use the labels provided */}
-            {/* this does not work properly as it is not rerendering when changing value */}
             <chakra.label fontWeight="bold" alignSelf={"center"}>From Date: </chakra.label>
 
             <input

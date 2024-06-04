@@ -1,5 +1,4 @@
-import { Frequency, AnalyticsDataType, MetadataForData } from "@/types/types";
-
+import { Frequency, AnalyticsDataType, MetadataForData, CodegenInput, CodegenResult } from "@/types/types";
 
 export function downloadFile(val: Blob, filename: string) {
     const url = URL.createObjectURL(val);
