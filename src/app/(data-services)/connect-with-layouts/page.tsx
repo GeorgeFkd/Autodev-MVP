@@ -195,9 +195,9 @@ function AssociateDataSourcesWithLayoutsPage() {
     console.log("Page name is: ", pageName)
     return (
         <Flex flexDir="column" p={"1rem"} columnGap={"1rem"} rowGap={"1rem"} wrap={"wrap"}>
-            <Flex columnGap="1rem">
+            <Flex columnGap="1rem" alignItems={"center"} w="100%">
                 <EditableSpan key={pageName} text={pageName} setText={setPageName} />
-                <Button rightIcon={<PlusSquareIcon />} onClick={goToNewPage}>New Page</Button>
+                <Button ml="auto" rightIcon={<PlusSquareIcon />} w="12rem" onClick={goToNewPage}>New Page</Button>
             </Flex>
             <ModalUserOption title="Get Software Developed Faster" description="You have finished with all the pages, would you like to submit all the pages?" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <Flex py="1rem" justifyContent="space-between">
@@ -232,14 +232,17 @@ function AssociateDataSourcesWithLayoutsPage() {
                             </Flex>
                         </ResizableBox>
                     })}
-                    <IconButton aria-label='Add Box in Row' onClick={() => addBox(rowIndex)} icon={<PlusSquareIcon />} />
-                    <Button onClick={() => deleteRow(rowIndex)}>Delete Row</Button>
+                    <Flex flexDir={"column"} rowGap={"1rem"}>
+
+                        <Button aria-label='Add Box in Row' onClick={() => addBox(rowIndex)} rightIcon={<PlusSquareIcon />}>Add Chart</Button>
+                        <Button colorScheme="red" onClick={() => deleteRow(rowIndex)}>Delete Row</Button>
+                    </Flex>
                 </Flex>
 
             })}
             <Button w="65%" alignSelf="center" onClick={addRow}>Add Row</Button>
             <Button w="35%" onClick={() => savePage(true)} position="fixed" bottom="1rem" right="1rem" colorScheme='blue'>Save Page</Button>
-            <Button w="35%" onClick={showModalForUserAction} position="fixed" bottom="1rem" left="1rem" colorScheme='red'>Submit All</Button>
+            <Button w="35%" onClick={showModalForUserAction} position="fixed" bottom="1rem" left="1rem" colorScheme='green'>Submit All</Button>
         </Flex>
     )
 }
@@ -537,7 +540,7 @@ function EditableSpan({ setText, text }: EditableSpanProps) {
         setText(editedText);
     }
 
-    return <chakra.div py="1rem" w="70%">
+    return <chakra.div py="1rem" w="50%">
         {isBeingEdited ? <input type="text" value={editedText} onChange={(e) => handleChange(e.target.value)} onBlur={handleBlur}
             ref={ref}
             autoFocus

@@ -14,9 +14,11 @@ import {
     MenuItem,
     Button,
     useToast,
+    Input,
+    IconButton,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import type { Frequency, MetadataForData, TimeRange } from "@/types/types";
 import { useGoHome } from "@/hooks/useGoHome";
 import {
@@ -26,7 +28,7 @@ import {
     fromStringGetAnalyticsDataType,
     fromStringGetFreq,
 } from "src/utils/utils";
-import { ChevronDownIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon, ArrowForwardIcon, ChevronDownIcon } from "@chakra-ui/icons";
 
 function generateRandomFreqVals(length: number | undefined): Frequency[] {
     if (length === undefined || length === null) return []
@@ -49,9 +51,15 @@ function SetPathsMetadataPage() {
     const { appState, dispatch } = useGlobalState();
     const toast = useToast();
     const router = useRouter();
+    const [current, setCurrent] = useState(0)
+    const currentApiData = appState?.selectedApiData[current]
+    if (!currentApiData) {
+        return "Something went wrong"
+    }
     console.log("Rendering with state: ", appState)
     useEffect(() => {
         let ignore = false;
+        window.addEventListener('keydown', handleArrowKeys);
         if (!ignore) {
             const body = JSON.stringify({
                 descriptions: appState?.selectedApiData.map((f) => f.description),
@@ -91,12 +99,43 @@ function SetPathsMetadataPage() {
 
         return () => {
             ignore = true;
+            window.removeEventListener("keydown", handleArrowKeys)
         };
     }, []);
-
     const handleMetadataChange = (index: number, data: Partial<MetadataForData>) => {
         //@ts-expect-error
         dispatch({ type: "set-api-data-elem-with-metadata", payload: { index, data } })
+    }
+
+    const handleNext = () => {
+        setCurrent(prev => (prev + 1) % appState.selectedApiData.length)
+    }
+
+    const handlePrev = () => {
+        setCurrent(prev => {
+            if (prev === 0) {
+                return appState.selectedApiData.length - 1
+            }
+            return prev - 1
+        })
+    }
+
+    const handleArrowKeys = (e: KeyboardEvent) => {
+        console.log("The event is: ", e)
+
+        if (!(e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "a" || e.key === "d")) {
+            e.preventDefault()
+            return;
+        }
+
+        if (e.key === "ArrowRight" || e.key === "d") {
+            e.preventDefault();
+            handleNext()
+
+        } else if (e.key === "ArrowLeft" || e.key === "a") {
+            e.preventDefault();
+            handlePrev()
+        }
     }
 
     const handleSubmit = () => {
@@ -121,33 +160,64 @@ function SetPathsMetadataPage() {
             console.log("Everything is set go to next page");
         }
     };
+
     return (
-        <Flex
-            flexDir="column"
-            w="100vw"
-            h="100vh"
-            rowGap={"1rem"}
-            alignItems={"center"}
-            paddingTop="1rem"
-            px="2.5rem"
-        >
-            {appState?.selectedApiData.map((apiData, index) => {
-                return (
-                    <ApiPathComponent
-                        key={apiData.identification}
-                        data={apiData}
-                        handleChange={handleMetadataChange}
-                        labelFromTime="From Date"
-                        labelToTime="To Date"
-                        labelFrequency={fromFreqGetString(apiData.frequency)}
-                        labelAnalyticsType={fromAnalyticsDataTypeGetString(apiData.analyticsDataType)}
-                        index={index}
-                    />
-                );
-            })}
-            <Button w="35%" onClick={(e) => handleSubmit()}>
-                Submit
-            </Button>
+        <Flex mt="1rem" alignItems={"center"} flexDir={"row"} justifyContent={"space-between"}>
+            <Flex p="1.5rem" w="18rem" h="100vh" flexDir={"column"} justifyItems={"center"} alignItems={"center"}>
+                <chakra.span>Available Data:</chakra.span>
+                <Flex flexDir={"column"} >
+                    {appState?.selectedApiData.map((apiData, index) => {
+                        return (
+                            <Flex cursor={"pointer"} onClick={(e) => setCurrent(index)} bgColor={index === current ? "green" : "initial"} justifyContent={"center"} alignItems={"center"} h="8rem" w="100%" borderBottom={index === appState.selectedApiData.length - 1 ? "" : "solid 2px black"} borderLeft="solid 3px black">
+                                <chakra.span fontWeight={"bold"} textAlign={"center"} key={apiData.identification}>
+                                    {apiData.description}
+                                </chakra.span>
+                                {/* TODO: Add a check mark for whichever has been filled */}
+                            </Flex>
+                        );
+                    })}
+                </Flex>
+            </Flex>
+            <Flex
+                flexDir="column"
+                w="100vw"
+                h="100vh"
+                rowGap={"1rem"}
+                alignItems={"center"}
+                paddingTop="1rem"
+                px="2.5rem"
+            >
+                {/* {appState?.selectedApiData.map((apiData, index) => {
+                return ( */}
+                <ApiPathComponent
+                    key={currentApiData.identification}
+                    data={currentApiData}
+                    handleChange={handleMetadataChange}
+                    labelFromTime="From Date"
+                    labelToTime="To Date"
+                    labelFrequency={fromFreqGetString(currentApiData.frequency)}
+                    labelAnalyticsType={fromAnalyticsDataTypeGetString(currentApiData.analyticsDataType)}
+                    index={current}
+                />
+                <Flex w="32rem" justifyContent={"space-between"}>
+                    <Button aria-label="previous" leftIcon={<ArrowBackIcon />} onClick={() => setCurrent(prev => {
+                        if (prev === 0) {
+                            return appState.selectedApiData.length - 1
+                        }
+                        return prev - 1
+                        // return (current - 1)%appState.selectedApiData.length
+
+                    })}>Previous</Button>
+                    <Button aria-label="next" rightIcon={<ArrowForwardIcon />} onClick={() => setCurrent(prev => (prev + 1) % appState.selectedApiData.length)}>Next</Button>
+                </Flex>
+
+
+                {/* );
+            })} */}
+                <Button w="35%" onClick={(e) => handleSubmit()}>
+                    Submit
+                </Button>
+            </Flex>
         </Flex>
     );
 }
@@ -196,21 +266,24 @@ function ApiPathComponent({
     };
     return (
         <Flex
+            borderRadius={"1rem"}
+            boxShadow={"dark-lg"}
             py="0.5rem"
             px="1rem"
-            w="100%"
+            w="35rem"
+            h="35rem"
             key={data.identification}
-            columnGap={"1.5rem"}
+            rowGap={"1.5rem"}
+            p="1.5rem"
+            flexDirection={"column"}
+            justifyContent={"space-around"}
             border="solid black 1px"
         >
-            <chakra.span fontWeight={"bold"}>
-                Description:{" "}
-                <chakra.span fontWeight={"initial"}>{data.description}</chakra.span>
-            </chakra.span>
-            <chakra.span fontWeight={"bold"}>
+            <chakra.span alignSelf={"center"} fontSize={"1.3rem"} fontWeight={"bold"}>{data.description}</chakra.span>
+            {/* <chakra.span fontWeight={"bold"}>
                 Id:{" "}
                 <chakra.span fontWeight={"initial"}>{data.identification}</chakra.span>
-            </chakra.span>
+            </chakra.span> */}
             <Menu>
                 <MenuButton
                     data-test-id="frequency-menu"
@@ -235,20 +308,19 @@ function ApiPathComponent({
                     })}
                 </MenuList>
             </Menu>
-            <chakra.label fontWeight="bold" alignSelf={"center"}>From Date: </chakra.label>
-
-            <input
-                type="date"
-                value={formatDateForInputElem(data.range?.from)}
-                onChange={(e) => handleDateChange(e.target.value, true)}
-            />
-            <chakra.label fontWeight="bold" alignSelf={"center"}>To Date: </chakra.label>
-
-            <input
-                type="date"
-                value={formatDateForInputElem(data.range?.to)}
-                onChange={(e) => handleDateChange(e.target.value, false)}
-            />
+            <Flex alignItems={"center"} justifyContent={"space-between"}>
+                <chakra.label fontWeight="bold" alignSelf={"center"}>From Date: </chakra.label>
+                <Input w="18rem" type="date" value={formatDateForInputElem(data.range?.from)} onChange={(e) => handleDateChange(e.target.value, true)} />
+                {/* <input
+                    type="date"
+                    value={formatDateForInputElem(data.range?.from)}
+                    onChange={(e) => handleDateChange(e.target.value, true)}
+                /> */}
+            </Flex>
+            <Flex alignItems={"center"} justifyContent={"space-between"}>
+                <chakra.label fontWeight="bold" alignSelf={"center"}>To Date: </chakra.label>
+                <Input w="18rem" type="date" value={formatDateForInputElem(data.range?.to)} onChange={(e) => handleDateChange(e.target.value, false)} />
+            </Flex>
             <Menu>
                 <MenuButton
                     data-test-id="frequency-menu"

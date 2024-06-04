@@ -14,6 +14,8 @@ export interface DataFromOpenAPIUrl {
     // need to find a way to have a unique identifier to be used to locate in the file the thing i need
     identification: string;
     description: string;
+    //it might make sense to separate them by openapi tags
+    //i could put more here so when the user hovers he can get the full explanation
 }
 
 export enum Frequency {
@@ -95,7 +97,7 @@ export interface AppContext {
 export enum AnalyticsDataType {
     REALTIME = "Real time",
     HISTORICAL = "Historical",
-    NONE="Analytics Data Type"
+    NONE = "Analytics Data Type"
 }
 
 export enum OASValidationResult {
