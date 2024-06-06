@@ -1,13 +1,8 @@
-//this is where i will generate the frontend
 import { readdirSync,readFileSync } from "fs";
 import path from "path"
 import { ApiDataComponent, AppContext, CodegenInput, CodegenResult, Page } from "@/types/types";
 import unzipper from 'unzipper';
 import { Readable } from 'stream';
-
-
-
-
 
 function changeSrcPathTo(pathStr:string,newPath:string){
     const pathSegments = pathStr.split(path.sep)
@@ -122,7 +117,7 @@ function ${forPage.pageName.replace(" ","")}(){
     ${forPage.associatedData.map(val=>{
         return `<${val.component.componentName} />
         `
-    }).join("\n")}
+    }).join("")}
     )
 }
 
@@ -131,14 +126,17 @@ ${forPage.associatedData.map(val=>WriteReactComponentForGraph({component:val})).
 }
 
 function WriteReactComponentForGraph({component}:{component:ApiDataComponent}){
-    return `function ${component.component.componentName.replace(" ","")}() {
+    return `
+//Populate chart with data from OpenAPI Specification Operation: ${component.data.description}
+function ${component.component.componentName.replace(" ","")}() {
     return (<div>
         <span>Component: ${component.component.componentName}</span>
         <span>Column: ${component.component.column}</span>
         <span>Row: ${component.component.row}</span>
         <span>Width: ${component.component.sizeX}</span>
         <span>Height: ${component.component.sizeY}</span>
-    </div>)
+        <span>Chart: ${component.data.graph}</span>
+    </div>);
 }
     `
 }
@@ -181,7 +179,7 @@ export async function POST(request:Request){
     }
     } catch (e){
         return Response.json({success:false,msg:"Loading the templates failed",info:e})
-    }
+    } 
 
     //all the files here are properly fetched, the uploading does not work properly
     console.log("Finished uploading the template files -> ",templatesGen)

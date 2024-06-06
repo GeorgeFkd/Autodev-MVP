@@ -3,6 +3,8 @@ import unzipper from 'unzipper';
 import { Readable } from 'stream';
 import path from "path"
 import { CodegenInput, CodegenResult } from "@/types/types";
+import OpenAI from "openai"
+import SwaggerClient from "swagger-client"
 
 function changeSrcPathTo(pathStr:string,newPath:string){
     const pathSegments = pathStr.split(path.sep)
@@ -51,14 +53,47 @@ async function GetFilesFromOASCodegenOnlineAnd(generatorInput:CodegenInput,willG
     return resultOfCodegen
 }
 
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY })
 
+function generatePromptContent(titleOfOpenAPISpec:string){
+    return `
+    We are creating software with a custom tool and we are helping the user create it from scratch.
+    You will always answer with the json format you were provided.
+    I will provide you the title of the openAPI specification the user wants to consume.
+    I want you to generate me a list of names, to be used as part of the path where the code will be generated on github.
+    Just one word, no slashes backslashes etc. etc.
+    Don't make it more than 20 characters.
+    Return it in the form of {names:string[]}
+    Title of openAPI Specification: ${titleOfOpenAPISpec}
+`
+}
+
+async function generateFriendlyNameForClientCodeInBackend(openAPIUrl:string){
+    const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        response_format: { "type": "json_object" },
+        messages: [{ role: "system", content: generatePromptContent(openAPIUrl) }]
+    })
+
+    const answer = completion.choices[0].message.content as string;
+    const jsonAnswer = JSON.parse(answer)
+    const finalAnswer = jsonAnswer.names
+    return finalAnswer
+}
 
 
 export async function POST(request: NextRequest) {
     const userInput: CodegenInput & {ghRepoUrl:string} = await request.json();
     const {language,openAPIUrl,options,spec} = userInput
+    const parsedOpenAPI = await new SwaggerClient(openAPIUrl)
+    const title = parsedOpenAPI["spec"]["info"]["title"]
+    console.log("The title is:",title)
+    const namesFromChatGPT = await generateFriendlyNameForClientCodeInBackend(title)
+    const randomName = namesFromChatGPT[Math.floor(Math.random() * namesFromChatGPT.length)]
+    const backendSrc = "backend" + "/" + "third-party" + "/" + randomName.replace("/","")
+    console.log("Everything will be put in: ",backendSrc)
     const resultOfCodegen = GetFilesFromOASCodegenOnlineAnd({language,openAPIUrl,options,spec},true,async (filepath,filecontent)=>{
-        const customPath = changeSrcPathTo(filepath,"backend")
+        const customPath = changeSrcPathTo(filepath,backendSrc)
         const result = await uploadFileToGithub(customPath, filecontent,userInput.ghRepoUrl)
         const response = await result.json()
         // console.log("Api returned: ", response)

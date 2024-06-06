@@ -53,10 +53,6 @@ function SetPathsMetadataPage() {
     const router = useRouter();
     const [current, setCurrent] = useState(0)
     const currentApiData = appState?.selectedApiData[current]
-    if (!currentApiData) {
-        return "Something went wrong"
-    }
-    console.log("Rendering with state: ", appState)
     useEffect(() => {
         let ignore = false;
         window.addEventListener('keydown', handleArrowKeys);
@@ -102,6 +98,11 @@ function SetPathsMetadataPage() {
             window.removeEventListener("keydown", handleArrowKeys)
         };
     }, []);
+    if (!currentApiData) {
+        return "Something went wrong"
+    }
+    console.log("Rendering with state: ", appState)
+
     const handleMetadataChange = (index: number, data: Partial<MetadataForData>) => {
         //@ts-expect-error
         dispatch({ type: "set-api-data-elem-with-metadata", payload: { index, data } })
@@ -168,8 +169,8 @@ function SetPathsMetadataPage() {
                 <Flex flexDir={"column"} >
                     {appState?.selectedApiData.map((apiData, index) => {
                         return (
-                            <Flex cursor={"pointer"} onClick={(e) => setCurrent(index)} bgColor={index === current ? "green" : "initial"} justifyContent={"center"} alignItems={"center"} h="8rem" w="100%" borderBottom={index === appState.selectedApiData.length - 1 ? "" : "solid 2px black"} borderLeft="solid 3px black">
-                                <chakra.span fontWeight={"bold"} textAlign={"center"} key={apiData.identification}>
+                            <Flex key={apiData.identification} cursor={"pointer"} onClick={(e) => setCurrent(index)} bgColor={index === current ? "green" : "initial"} justifyContent={"center"} alignItems={"center"} h="8rem" w="100%" borderBottom={index === appState.selectedApiData.length - 1 ? "" : "solid 2px black"} borderLeft="solid 3px black">
+                                <chakra.span fontWeight={"bold"} textAlign={"center"} >
                                     {apiData.description}
                                 </chakra.span>
                                 {/* TODO: Add a check mark for whichever has been filled */}

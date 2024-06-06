@@ -10,6 +10,7 @@ export async function POST(request: Request) {
     const urlOfFile = await request.text();
     const parsedOpenAPI = await new SwaggerClient(urlOfFile)
     console.log("parsedOpenAPI: ", parsedOpenAPI)
+    console.log("Title of spec: ",parsedOpenAPI["spec"]["info"]["title"])
     console.log("api for /rest/common/fetch/uploads: ", parsedOpenAPI["spec"]["paths"]["/rest/nsp/fetch/priority/pos"])
 
     //the OpenAPI logic could be extracted to a different function
