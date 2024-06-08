@@ -207,7 +207,7 @@ function AppSummary({ data }: AppSummary) {
                 <chakra.span alignSelf={"center"} fontWeight={"bold"}>Charts:</chakra.span>
                 {data.pages.map(page => {
                     return (
-                        <CodegenPage page={page} />
+                        <CodegenPage key={page.pageName} page={page} />
                     )
                 })}
             </Flex></>
