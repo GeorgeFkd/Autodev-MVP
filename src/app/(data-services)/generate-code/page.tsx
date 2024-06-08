@@ -2,8 +2,10 @@
 import Container from '@/components/Container';
 import { useGlobalState } from '@/contexts/AppContext'
 import React, { useEffect, useState } from 'react'
-import { Button, Checkbox, Flex, Menu, MenuButton, MenuItem, MenuList, chakra, useBoolean } from "@chakra-ui/react"
+import { Button, Checkbox, Flex, ListItem, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, UnorderedList, chakra, useBoolean, useDisclosure } from "@chakra-ui/react"
 import { ArrowDownIcon } from "@chakra-ui/icons"
+import Link from 'next/link';
+import { ApiDataComponent, AppContext, Page } from '@/types/types';
 
 
 enum CodegenState {
@@ -37,10 +39,11 @@ function getMessageOfStep(step: CodegenState) {
 
 function GenerateCodePage() {
     const { appState, dispatch } = useGlobalState();
-    const [availableLanguages, setAvailableLanguages] = useState([""])
-    const [selectedLanguage, setSelectedLanguage] = useState("");
+    const [selectedLanguage, setSelectedLanguage] = useState("java");
+    const availableLanguages = useAvailableLanguages();
     const [currentStateOfGeneration, setCurrentStateOfGeneration] = useState({ loading: false, currentStep: CodegenState.NotYetStarted })
-    const [linkText, setLinkText] = useState("")
+    const [githubUrl, setGithubUrl] = useState("")
+    const { isOpen, onOpen, onClose } = useDisclosure()
     const generateBackendCode = async (inGhRepo: string) => {
         return fetch("/api/openapi-gen", {
             method: "POST",
@@ -90,7 +93,7 @@ function GenerateCodePage() {
         setCurrentStateOfGeneration({ loading: true, currentStep: CodegenState.GenerateBlueprints })
         const ghRepoInitResult = await createGhRepoAndIssues();
         console.log("Github Init result: ", ghRepoInitResult)
-        setLinkText("You can see more here: " + ghRepoInitResult.htmlUrlToDisplay)
+        setGithubUrl(ghRepoInitResult.htmlUrlToDisplay)
 
         setCurrentStateOfGeneration({ loading: true, currentStep: CodegenState.GenerateCode })
         const backendCodegenResult = await generateBackendCode(ghRepoInitResult.urlOfRepo)
@@ -106,7 +109,33 @@ function GenerateCodePage() {
 
     }
 
+    return (
+        <Container>
+            <chakra.h1 fontSize={"2rem"}>Generate Code for: {appState?.appName}</chakra.h1>
+            <chakra.p>URL: {appState?.inputUrl}</chakra.p>
+            <Button onClick={onOpen}>Show Summary</Button>
+            <SummaryOfGeneration data={appState} isOpen={isOpen} onClose={onClose} />
+            {githubUrl && <chakra.p>The Github Repo can be found <Link href={githubUrl}>here</Link></chakra.p>}
+            {/*  there is a bug here caused by scrolling */}
+            <Menu placement="right-end">
+                <MenuButton as={Button} rightIcon={<ArrowDownIcon />}>
+                    {selectedLanguage || "Choose Programming Language"}
+                </MenuButton>
+                <MenuList>
+                    {availableLanguages.map((language) => {
+                        return <MenuItem key={language} onClick={() => setSelectedLanguage(language)}>{language}</MenuItem>
 
+                    })}
+                </MenuList>
+            </Menu>
+            {currentStateOfGeneration.currentStep !== CodegenState.NotYetStarted ? <ProgressMessage step={currentStateOfGeneration.currentStep} /> : <></>}
+            <Button onClick={() => handleSubmit()} isLoading={currentStateOfGeneration.loading}>Generate Dev Blueprints</Button>
+        </Container>
+    )
+}
+
+function useAvailableLanguages() {
+    const [availableLanguages, setAvailableLanguages] = useState([""])
     useEffect(() => {
         let ignore = false;
         if (!ignore) {
@@ -128,29 +157,94 @@ function GenerateCodePage() {
             ignore = true;
         }
     }, [])
+    return availableLanguages
+}
 
+
+interface SummarizeGenerationProps {
+    data: AppContext | null,
+    isOpen: boolean,
+    onClose: () => void
+}
+
+function SummaryOfGeneration({ isOpen, data, onClose }: SummarizeGenerationProps) {
+    if (!data) {
+        return "Something went wrong"
+    }
+    return <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
+        <ModalOverlay />
+        <ModalContent>
+            <ModalHeader>Generating an App with Automaton</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+                <AppSummary data={data} />
+            </ModalBody>
+
+            <ModalFooter w="100%">
+                <Flex w="100%" flexDir="column">
+                    <Button alignSelf={"center"} onClick={onClose}>Continue Code Generation</Button>
+                </Flex>
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
+}
+
+interface AppSummary {
+    data: AppContext
+}
+
+function AppSummary({ data }: AppSummary) {
 
     return (
-        <Container>
-            <chakra.h1 fontSize={"1.5rem"}>Generate Code for: { }</chakra.h1>
-            <chakra.p>URL: {appState?.inputUrl}</chakra.p>
-            {linkText && <chakra.p>The Github Url is: {linkText}</chakra.p>}
-            {/*  there is a bug here caused by scrolling */}
-            <Menu placement="right-end">
-                <MenuButton as={Button} rightIcon={<ArrowDownIcon />}>
-                    {selectedLanguage || "Choose Programming Language"}
-                </MenuButton>
-                <MenuList>
-                    {availableLanguages.map((language) => {
-                        return <MenuItem key={language} onClick={() => setSelectedLanguage(language)}>{language}</MenuItem>
-
-                    })}
-                </MenuList>
-            </Menu>
-            {currentStateOfGeneration.currentStep !== CodegenState.NotYetStarted ? <ProgressMessage step={currentStateOfGeneration.currentStep} /> : <></>}
-            <Button onClick={() => handleSubmit()} isLoading={currentStateOfGeneration.loading}>Generate Dev Blueprints</Button>
-        </Container>
+        <>
+            <Flex flexDir="column" rowGap={"1rem"} mb="0.5rem">
+                <chakra.p><chakra.span fontWeight={"bold"}>App Title:</chakra.span> {data.appName}</chakra.p>
+                <chakra.p><chakra.span fontWeight={"bold"}>App Type:</chakra.span> {data.appType}</chakra.p>
+                <chakra.p><chakra.span fontWeight={"bold"}>Data is from:</chakra.span> <Link href={data.inputUrl}>{data.inputUrl}</Link></chakra.p>
+            </Flex>
+            <hr></hr>
+            <Flex flexDir={"column"} mt="1rem">
+                <chakra.span alignSelf={"center"} fontWeight={"bold"}>Charts:</chakra.span>
+                {data.pages.map(page => {
+                    return (
+                        <CodegenPage page={page} />
+                    )
+                })}
+            </Flex></>
     )
+}
+
+
+interface CodegenPage {
+    page: Page
+}
+
+function CodegenPage({ page }: CodegenPage) {
+    return (<><Flex flexDir={"column"} key={page.pageName}>
+        <chakra.p><chakra.span fontWeight={"bold"}>Page:</chakra.span> {page.pageName}</chakra.p>
+        <chakra.span fontWeight={"bold"} ml="1rem" mb="1rem">Components</chakra.span>
+        <Flex flexDir="column" ml="2rem" rowGap={"1rem"}>
+            {page.associatedData.map(component => {
+                return (
+                    <CodegenComponent key={component.data.identification} data={component} />
+                )
+            })}
+        </Flex>
+    </Flex>
+        <hr></hr></>)
+}
+
+interface CodegenComponent {
+    data: ApiDataComponent
+}
+
+function CodegenComponent({ data }: CodegenComponent) {
+    return <Flex flexDir={"column"} mb="1rem">
+        <chakra.span><chakra.span fontWeight={"bold"} mr="1rem">Name:</chakra.span> {data.component.componentName}</chakra.span>
+        <chakra.span><chakra.span fontWeight={"bold"} mr="1rem"> Data Source:</chakra.span> {data.data.description}</chakra.span>
+        <chakra.span><chakra.span fontWeight={"bold"} mr="1rem">Statistics Chart:</chakra.span> {data.data.graph}</chakra.span>
+        <hr></hr>
+    </Flex>
 }
 
 interface ProgressMessageProps {

@@ -63,7 +63,7 @@ function AssociateDataSourcesWithLayoutsPage() {
 
     const addBox = (rowId: number) => {
         const newRows = [...rows];
-        const newLabel = "label" + rows.reduce((acc, current) => {
+        const newLabel = "Label" + rows.reduce((acc, current) => {
             return acc + current.boxes.length;
         }, 0)
         //the dimension stuff doesnt work that well but it is something
