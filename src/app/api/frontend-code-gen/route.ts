@@ -164,6 +164,7 @@ export async function POST(request:Request){
     
     //uploading the vite part to github
     let templatesGen:string[] = []
+    let notUploadedFromTemplate:string[] = []
     try {
         const templateFiles = getFilesFromTemplateDir()
         console.log("The template files are:",templateFiles)
@@ -175,11 +176,24 @@ export async function POST(request:Request){
             //kapou apla petaei 409 kai den katalavainw giati
             const result = await uploadFileToGithub(customPath,file.content,ghRepoUrl)
             console.log("API Response code: ",result.status,result.statusText)
+            if(result.status === 201){
+                const body = await result.json()
+                console.log("Body is: ")
+                
+                // ghActualUrl = body.
+            }else {
+                notUploadedFromTemplate.push(file.path)
+            }
 
     }
     } catch (e){
         return Response.json({success:false,msg:"Loading the templates failed",info:e})
     } 
+
+    if(notUploadedFromTemplate.length > 0){
+        console.log("The following files were not uploaded from the template")
+        console.log(notUploadedFromTemplate)
+    }
 
     //all the files here are properly fetched, the uploading does not work properly
     console.log("Finished uploading the template files -> ",templatesGen)
@@ -188,25 +202,36 @@ export async function POST(request:Request){
 
 
     //uploading the api code of the library
-    let filesGen:string[] = []
+    let generatedFiles:string[] = []
+    let notUploaded:string[] = []
     try {
         const language = "typescript-fetch"
         
         const resultOfCodegen = await GetFilesFromOASCodegenOnlineAnd({language,openAPIUrl,options:{},spec:{}},true,async (filepath,filecontent)=>{
-            filesGen.push(filepath)
+            
             const customPath = changeSrcPathTo(filepath,"frontend/src/api")
             const result = await uploadFileToGithub(customPath, filecontent,ghRepoUrl)
             console.log("For Api Code Api returned: ", result.status,result.statusText)
+            if(result.status !== 201){
+                //file was not uploaded properly
+                notUploaded.push(customPath)
+            }
+            generatedFiles.push(filepath)
         })
 
     }catch (e){
         return Response.json({success:false,msg:"Loading the API code from OpenAPI Codegen failed",info:e})
     }
 
+    if(notUploaded.length > 0){
+        console.log("The following files were not uploaded")
+        console.log(notUploaded)
+    }
+
     setTimeout(()=>{console.log("waiting")},2000)
 
     //the OpenAPI is bringing all of the files in, for some reason some do not make it to github
-    console.log("Finished uploading the api code for files: ",filesGen)
+    console.log("Finished uploading the api code for files: ",generatedFiles)
     //uploading my react code to github
     try{
         const reactPagesGenerated = createFilesFromUserInput(userInput)

@@ -168,6 +168,7 @@ export async function POST(request: Request) {
         return Response.json({ success: false, msg: "Github Repo creation was unsuccessfull",result:body })
     }
     const body = await result.json();
+    const fullGithubUrl = body.html_url
     console.log("Results from Repo Creation", body)
 
     const issues = data.pages.map((page) => createIssueFromPage(page, data.inputUrl))
@@ -182,6 +183,7 @@ export async function POST(request: Request) {
     return Response.json({
         success: true,
         urlOfRepo:ghRepoUrl,
+        htmlUrlToDisplay:fullGithubUrl,
         msg: "Dev blueprints were created successfully you can see it in: "
     })
 

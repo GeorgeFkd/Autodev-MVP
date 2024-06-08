@@ -82,22 +82,44 @@ async function generateFriendlyNameForClientCodeInBackend(openAPIUrl:string){
 }
 
 
+
+
 export async function POST(request: NextRequest) {
     const userInput: CodegenInput & {ghRepoUrl:string} = await request.json();
     const {language,openAPIUrl,options,spec} = userInput
     const parsedOpenAPI = await new SwaggerClient(openAPIUrl)
+
     const title = parsedOpenAPI["spec"]["info"]["title"]
     console.log("The title is:",title)
     const namesFromChatGPT = await generateFriendlyNameForClientCodeInBackend(title)
     const randomName = namesFromChatGPT[Math.floor(Math.random() * namesFromChatGPT.length)]
     const backendSrc = "backend" + "/" + "third-party" + "/" + randomName.replace("/","")
+
     console.log("Everything will be put in: ",backendSrc)
+    let generatedFiles:string[] = []
+    let notUploaded:string[] = []
     const resultOfCodegen = GetFilesFromOASCodegenOnlineAnd({language,openAPIUrl,options,spec},true,async (filepath,filecontent)=>{
         const customPath = changeSrcPathTo(filepath,backendSrc)
         const result = await uploadFileToGithub(customPath, filecontent,userInput.ghRepoUrl)
-        const response = await result.json()
+        if(result.status !== 201){
+            notUploaded.push(customPath)
+        }
+        // const response = await result.json()
+        generatedFiles.push(filepath)
         // console.log("Api returned: ", response)
     })
+    if(notUploaded.length > 0){
+        console.log("The following files were not uploaded")
+        console.log(notUploaded)
+    }
+    console.log("Backend files from OpenAPI generation are: ",generatedFiles)
+    //https://start.spring.io/starter.zip?type=maven-project&language=java&bootVersion=3.3.0&baseDir=demo&groupId=com.example&artifactId=demo&name=demo&description=Demo project for Spring Boot&packageName=com.example.demo&packaging=jar&javaVersion=21&dependencies=web,lombok,modulith,native,devtools,data-jpa,postgresql
+    //TODO: Somehow like this i can also write the backend using this
+    //but this is an extra feature for the future
+    // i can also generate some custom backend files for each page
+    // write the spring boot boilerplate and start a project 
+
+
 
     return Response.json(resultOfCodegen)
 }

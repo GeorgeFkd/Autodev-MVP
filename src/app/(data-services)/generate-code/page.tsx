@@ -17,7 +17,8 @@ enum CodegenState {
 interface GitRepoResponse {
     success: boolean,
     urlOfRepo: string,
-    msg: string
+    msg: string,
+    htmlUrlToDisplay: string
 }
 
 interface FrontendGenResponse {
@@ -39,8 +40,7 @@ function GenerateCodePage() {
     const [availableLanguages, setAvailableLanguages] = useState([""])
     const [selectedLanguage, setSelectedLanguage] = useState("");
     const [currentStateOfGeneration, setCurrentStateOfGeneration] = useState({ loading: false, currentStep: CodegenState.NotYetStarted })
-    const [backendFlag, setBackendFlag] = useBoolean(true);
-    const [frontendFlag, setFrontendFlag] = useBoolean(true);
+    const [linkText, setLinkText] = useState("")
     const generateBackendCode = async (inGhRepo: string) => {
         return fetch("/api/openapi-gen", {
             method: "POST",
@@ -90,19 +90,17 @@ function GenerateCodePage() {
         setCurrentStateOfGeneration({ loading: true, currentStep: CodegenState.GenerateBlueprints })
         const ghRepoInitResult = await createGhRepoAndIssues();
         console.log("Github Init result: ", ghRepoInitResult)
+        setLinkText("You can see more here: " + ghRepoInitResult.htmlUrlToDisplay)
 
-        if (backendFlag) {
-            setCurrentStateOfGeneration({ loading: true, currentStep: CodegenState.GenerateCode })
-            const backendCodegenResult = await generateBackendCode(ghRepoInitResult.urlOfRepo)
-            setCurrentStateOfGeneration({ loading: false, currentStep: CodegenState.FinishedSuccessfully })
-            console.log("For backend codegen: ", backendCodegenResult)
-        }
-        if (frontendFlag) {
-            setCurrentStateOfGeneration({ loading: true, currentStep: CodegenState.GenerateCode })
-            const frontendCodegenResult = await generateFrontendCode(ghRepoInitResult.urlOfRepo)
-            setCurrentStateOfGeneration({ loading: false, currentStep: CodegenState.FinishedSuccessfully })
-            console.log("For frontend codegen: ", frontendCodegenResult)
-        }
+        setCurrentStateOfGeneration({ loading: true, currentStep: CodegenState.GenerateCode })
+        const backendCodegenResult = await generateBackendCode(ghRepoInitResult.urlOfRepo)
+        setCurrentStateOfGeneration({ loading: false, currentStep: CodegenState.FinishedSuccessfully })
+        console.log("For backend codegen: ", backendCodegenResult)
+
+        setCurrentStateOfGeneration({ loading: true, currentStep: CodegenState.GenerateCode })
+        const frontendCodegenResult = await generateFrontendCode(ghRepoInitResult.urlOfRepo)
+        setCurrentStateOfGeneration({ loading: false, currentStep: CodegenState.FinishedSuccessfully })
+        console.log("For frontend codegen: ", frontendCodegenResult)
 
         console.log("Continuing:")
 
@@ -136,12 +134,8 @@ function GenerateCodePage() {
         <Container>
             <chakra.h1 fontSize={"1.5rem"}>Generate Code for: { }</chakra.h1>
             <chakra.p>URL: {appState?.inputUrl}</chakra.p>
+            {linkText && <chakra.p>The Github Url is: {linkText}</chakra.p>}
             {/*  there is a bug here caused by scrolling */}
-            <Flex columnGap={"1rem"}>
-                <Checkbox onClick={setFrontendFlag.toggle} size="lg">Frontend Code</Checkbox>
-                <Checkbox onClick={setBackendFlag.toggle} size="lg">Backend Code</Checkbox>
-            </Flex>
-
             <Menu placement="right-end">
                 <MenuButton as={Button} rightIcon={<ArrowDownIcon />}>
                     {selectedLanguage || "Choose Programming Language"}
