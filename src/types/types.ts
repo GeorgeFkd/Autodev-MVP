@@ -86,12 +86,16 @@ export enum SupportedSoftware {
     BUSINESS_PROCESS = "Process Automation"
 }
 
+export type NFR_TYPE = "Performance" | "Reliability" | "Security" | "Maintainability"
+
 export interface AppContext {
     inputUrl: OpenAPIUrl | GeneralWebsiteUrl;
     selectedApiData: SelectedApiData;
     pages: Page[];
     appName: string;
-    appType: SupportedSoftware
+    appType: SupportedSoftware;
+    //
+    nfr:Record<NFR_TYPE,number>
 }
 
 export enum AnalyticsDataType {

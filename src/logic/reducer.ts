@@ -1,4 +1,4 @@
-import { SupportedSoftware, type ApiData, type AppContext, type DataFromOpenAPIUrl, type GeneralWebsiteUrl, type Layout, type OpenAPIUrl, type Page, type SelectedApiData, AnalyticsDataType, MetadataForData } from "@/types/types";
+import { SupportedSoftware, type ApiData, type AppContext, type DataFromOpenAPIUrl, type GeneralWebsiteUrl, type Layout, type OpenAPIUrl, type Page, type SelectedApiData, AnalyticsDataType, MetadataForData, NFR_TYPE } from "@/types/types";
 //i need some typing generally
 
 
@@ -19,7 +19,7 @@ type addPage = AppAction<string>;
 type editPage = AppAction<string>;
 
 
-export const EMPTY_APP_CONTEXT: AppContext = { inputUrl: "some weird page", pages: [], selectedApiData: [], appName: "", appType: SupportedSoftware.NONE }
+export const EMPTY_APP_CONTEXT: AppContext = { inputUrl: "some weird page", pages: [], selectedApiData: [], appName: "", appType: SupportedSoftware.NONE,nfr:{Performance:0,Maintainability:0,Reliability:0,Security:0} }
 
 export type AllActions = setUrlAction;
 
@@ -37,6 +37,19 @@ export default function appReducer(app: AppContext, action: AllActions): AppCont
             ...app,
             inputUrl: payload
         }
+    }
+
+    if (action.type == "set-non-functional-requirement") {
+        //@ts-expect-error
+        const payload:Partial<Record<NFR_TYPE,number>> = action.payload;
+        return {
+            ...app,
+            nfr:{
+                ...app.nfr,
+                ...payload
+            }
+        }
+
     }
 
     if (action.type == "set-app-name") {
