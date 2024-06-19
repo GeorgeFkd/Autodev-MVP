@@ -1,20 +1,18 @@
 "use client"
 import { Header2 } from "@/components/Headers"
+import ModalUserOption from "@/components/ModalUserOption";
 import { TextLG } from "@/components/Text"
 import { useGlobalState } from "@/contexts/AppContext";
 import { MinusIcon, PlusSquareIcon } from "@chakra-ui/icons";
 import { Flex,Box, Button, IconButton,chakra } from "@chakra-ui/react"
 import { useRouter } from 'next/navigation';
-
-
-
-
-
-
+import { useState } from "react";
+import { downloadFile } from "src/utils/utils";
 
 export default function NonFunctionalRequirementsPage(){
     const { appState, dispatch } = useGlobalState();
     const router = useRouter();
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     console.log("App State is: ",appState)
     if(!appState?.nfr){
         return "Something went wrong"
@@ -26,8 +24,30 @@ export default function NonFunctionalRequirementsPage(){
         dispatch({type:"set-non-functional-requirement",payload:obj})
     }
 
-    const goToNextPage = () => {
-        router.push("/")
+    const generateDocument = () => {
+        //can extract this to a method to isolate logic
+        console.log("Generating Requirements Document")
+        fetch("/api/create-requirements-file", {
+            method: "POST",
+            // how tf this works
+            body: JSON.stringify(appState),
+        }).then((response) => {
+            if (response.ok) {
+                console.log("Requirements document properly generated")
+            } else {
+                console.error("Error generating requirements document")
+            }
+            return response.blob();
+        }).then((val) => {
+            downloadFile(val, "Requirements.md")
+        }).catch((error) => {
+            console.error("Error sending email: ", error)
+        })
+    }
+
+    const generateCode = () => {
+        console.log("Going to /generate-code")
+        router.push("/generate-code")
     }
 
 
@@ -40,7 +60,13 @@ export default function NonFunctionalRequirementsPage(){
                 return <RequirementsBar key={k} color={"lightgreen"} label={k} value={val} onChange={(a)=>handleSubmit(k,a)} />
             })}
         </Flex>
-        <Button onClick={goToNextPage}>Submit</Button>
+        <ModalUserOption title="Get Software Developed Faster" description="You have finished with all the pages, would you like to submit all the pages?" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <Flex py="1rem" justifyContent="space-between">
+                    <Button onClick={generateDocument}>Generate Document</Button>
+                    <Button onClick={generateCode}>Generate Code</Button>
+                </Flex>
+        </ModalUserOption>
+        <Button onClick={()=>setIsModalOpen(true)}>Submit</Button>
     </Flex>
 }
 interface RequirementsBarProps {

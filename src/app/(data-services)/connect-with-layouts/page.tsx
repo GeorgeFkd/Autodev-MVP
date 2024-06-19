@@ -1,6 +1,5 @@
 "use client"
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Pie, PieChart, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from "recharts"
-import ModalUserOption from '@/components/ModalUserOption';
 import ResizableBox from '@/components/ResizableBox';
 import { useGlobalState } from '@/contexts/AppContext'
 import { useGoHome } from '@/hooks/useGoHome';
@@ -9,7 +8,6 @@ import { ChevronDownIcon, DeleteIcon, PlusSquareIcon } from '@chakra-ui/icons';
 import { chakra, Button, Flex, IconButton, Menu, MenuButton, MenuItem, MenuList, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
-import { downloadFile } from 'src/utils/utils';
 
 type Box = {
     width: number,
@@ -37,7 +35,6 @@ function AssociateDataSourcesWithLayoutsPage() {
     const toast = useToast();
     const [rows, setRows] = useState<Row[]>([{ boxes: [defaultBox], id: 0 }]);
     const [pageName, setPageName] = useState<string>("Page 1");
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const router = useRouter();
     //those should probably be in the same hook and then just pick what you want
     const { appState, dispatch } = useGlobalState();
@@ -48,11 +45,6 @@ function AssociateDataSourcesWithLayoutsPage() {
 
 
     const changeBox = (rowId: number, boxId: number, newBox: Partial<Box>) => {
-        if (newBox.height) {
-            console.log("Changing for height")
-        } else if (newBox.width) {
-            console.log("Changing it for width")
-        }
         console.log("Changing it to: ", newBox)
         const newRows = [...rows];
         const currentBox = newRows[rowId].boxes[boxId];
@@ -152,38 +144,13 @@ function AssociateDataSourcesWithLayoutsPage() {
         setPageName(prev => "New Page");
     }
 
-    const showModalForUserAction = () => {
+    const goToNonFunctionalRequirements = () => {
         console.log("User has finished with all pages")
         //used so i dont have to click save page when im done
         savePage(false)
-        setIsModalOpen(true);
+        router.push("/non-functional-requirements")
     }
 
-    const generateDocument = () => {
-        //can extract this to a method to isolate logic
-        console.log("Generating Requirements Document")
-        fetch("/api/create-requirements-file", {
-            method: "POST",
-            // how tf this works
-            body: JSON.stringify(appState),
-        }).then((response) => {
-            if (response.ok) {
-                console.log("Requirements document properly generated")
-            } else {
-                console.error("Error generating requirements document")
-            }
-            return response.blob();
-        }).then((val) => {
-            downloadFile(val, "Requirements.md")
-        }).catch((error) => {
-            console.error("Error sending email: ", error)
-        })
-    }
-
-    const generateCode = () => {
-        console.log("Going to /generate-code")
-        router.push("/generate-code")
-    }
     const getHeightOfRest = (pos: number) => {
         return rows.filter((el, index) => index < pos).map(r => {
             return Math.max(...r.boxes.map(b => b.height))
@@ -199,12 +166,12 @@ function AssociateDataSourcesWithLayoutsPage() {
                 <EditableSpan key={pageName} text={pageName} setText={setPageName} />
                 <Button ml="auto" rightIcon={<PlusSquareIcon />} w="12rem" onClick={goToNewPage}>New Page</Button>
             </Flex>
-            <ModalUserOption title="Get Software Developed Faster" description="You have finished with all the pages, would you like to submit all the pages?" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            {/* <ModalUserOption title="Get Software Developed Faster" description="You have finished with all the pages, would you like to submit all the pages?" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <Flex py="1rem" justifyContent="space-between">
                     <Button onClick={generateDocument}>Generate Document</Button>
                     <Button onClick={generateCode}>Generate Code</Button>
                 </Flex>
-            </ModalUserOption>
+            </ModalUserOption> */}
             {rows.map((row, rowIndex) => {
                 const getWidthOfRest = (pos: number) => {
                     return row.boxes.filter((el, index) => index < pos).reduce((acc, curr) => acc + curr.width, 0)
@@ -242,7 +209,7 @@ function AssociateDataSourcesWithLayoutsPage() {
             })}
             <Button w="65%" alignSelf="center" onClick={addRow}>Add Row</Button>
             <Button w="35%" onClick={() => savePage(true)} position="fixed" bottom="1rem" right="1rem" colorScheme='blue'>Save Page</Button>
-            <Button w="35%" onClick={showModalForUserAction} position="fixed" bottom="1rem" left="1rem" colorScheme='green'>Submit All</Button>
+            <Button w="35%" onClick={goToNonFunctionalRequirements} position="fixed" bottom="1rem" left="1rem" colorScheme='green'>Submit All</Button>
         </Flex>
     )
 }
