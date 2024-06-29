@@ -26,7 +26,7 @@ function DataServicesPage() {
     const [validationState, setValidationState] = useState(OASValidationResult.Loading);
     console.log(appState?.appName)
     const router = useRouter();
-    const [urlInput, setUrlInput] = useState("https://www1.aade.gr/aadeapps3/posApi/rest/openapi.json")
+    const [urlInput, setUrlInput] = useState("https://api.ember-climate.org/openapi.json")
     function handleSubmit(userInp: string) {
         if (!isUrlLike(userInp)) { return; }
         console.log("Submitting URL: ", userInp)

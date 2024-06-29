@@ -208,8 +208,7 @@ function AssociateDataSourcesWithLayoutsPage() {
 
             })}
             <Button w="65%" alignSelf="center" onClick={addRow}>Add Row</Button>
-            <Button w="35%" onClick={() => savePage(true)} position="fixed" bottom="1rem" right="1rem" colorScheme='blue'>Save Page</Button>
-            <Button w="35%" onClick={goToNonFunctionalRequirements} position="fixed" bottom="1rem" left="1rem" colorScheme='green'>Submit All</Button>
+            <Button w="35%" onClick={goToNonFunctionalRequirements} position="fixed" bottom="1rem" left="33%" colorScheme='green'>Submit All</Button>
         </Flex>
     )
 }

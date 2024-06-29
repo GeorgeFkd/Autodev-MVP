@@ -64,7 +64,7 @@ interface SelectOpenAPIPathsListProps {
 function SelectOpenAPIPathsList({ data, handleChecked, checkedVals }: SelectOpenAPIPathsListProps) {
     return (
         <Grid templateColumns={"1fr 1fr 1fr 1fr"} gridGap={"1.25rem"} >
-            {data.map(apiData => {
+            {data.filter(apiData => apiData.description && apiData.identification).map(apiData => {
                 return (<GridItem key={apiData.identification} ><PathCheckbox data={apiData} handleChecked={handleChecked} isChecked={checkedVals.includes(apiData.identification)} /></GridItem>)
             })}
         </Grid>
@@ -79,7 +79,7 @@ interface PathCheckboxProps {
 
 function PathCheckbox({ data, handleChecked, isChecked }: PathCheckboxProps) {
     return (
-        <Box whileHover={{ scale: 1.075 }} as={motion.div} cursor={"pointer"} boxShadow={`${!isChecked ? "":"6px 6px 1px"}`} borderRadius={"0.75rem"} w="20rem" h="12rem" onClick={(e) => handleChecked(data.identification)} py="0.5rem" px="1rem" key={data.identification} border={`solid ${isChecked ? "green 4px" : "black 1px"}`}>
+        <Box whileHover={{ scale: 1.075 }} as={motion.div} cursor={"pointer"} boxShadow={`${!isChecked ? "" : "6px 6px 1px"}`} borderRadius={"0.75rem"} w="20rem" h="12rem" onClick={(e) => handleChecked(data.identification)} py="0.5rem" px="1rem" key={data.identification} border={`solid ${isChecked ? "green 4px" : "black 1px"}`}>
             <Flex w="100%" h="100%" columnGap={"1.5rem"} flexDirection={"row"} alignItems={"center"} justifyContent={"center"}>
                 <chakra.span fontSize={"1.2rem"} fontWeight={"initial"}>{data.description}</chakra.span>
                 {/* <chakra.span fontWeight={"bold"}>Id: <chakra.span fontWeight={"initial"}>{data.identification}</chakra.span></chakra.span> */}

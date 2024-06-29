@@ -115,7 +115,7 @@ function GenerateCodePage() {
             <chakra.p>URL: {appState?.inputUrl}</chakra.p>
             <Button onClick={onOpen}>Show Summary</Button>
             <SummaryOfGeneration data={appState} isOpen={isOpen} onClose={onClose} />
-            {githubUrl && <chakra.p>The Github Repo can be found <Link href={githubUrl}>here</Link></chakra.p>}
+            {(githubUrl.length > 0) && <chakra.p>The Github Repo can be found <Link href={githubUrl}>here</Link></chakra.p>}
             {/*  there is a bug here caused by scrolling */}
             <Menu placement="right-end">
                 <MenuButton as={Button} rightIcon={<ArrowDownIcon />}>

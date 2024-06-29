@@ -29,6 +29,7 @@ import {
     fromStringGetFreq,
 } from "src/utils/utils";
 import { ArrowBackIcon, ArrowForwardIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import { Header2 } from "@/components/Headers";
 
 function generateRandomFreqVals(length: number | undefined): Frequency[] {
     if (length === undefined || length === null) return []
@@ -163,61 +164,65 @@ function SetPathsMetadataPage() {
     };
 
     return (
-        <Flex mt="1rem" alignItems={"center"} flexDir={"row"} justifyContent={"space-between"}>
-            <Flex p="1.5rem" w="18rem" h="100vh" flexDir={"column"} justifyItems={"center"} alignItems={"center"}>
-                <chakra.span>Available Data:</chakra.span>
-                <Flex flexDir={"column"} >
-                    {appState?.selectedApiData.map((apiData, index) => {
-                        return (
-                            <Flex key={apiData.identification} cursor={"pointer"} onClick={(e) => setCurrent(index)} bgColor={index === current ? "green" : "initial"} justifyContent={"center"} alignItems={"center"} h="8rem" w="100%" borderBottom={index === appState.selectedApiData.length - 1 ? "" : "solid 2px black"} borderLeft="solid 3px black">
-                                <chakra.span fontWeight={"bold"} textAlign={"center"} >
-                                    {apiData.description}
-                                </chakra.span>
-                                {/* TODO: Add a check mark for whichever has been filled */}
-                            </Flex>
-                        );
-                    })}
+        <Flex flexDir={"column"} justifyContent={"center"} justifyItems={"center"} w="100vw">
+            <chakra.div alignSelf={"center"}><Header2 text="Set Metadata for Data Sources" /></chakra.div>
+            <Flex mt="1rem" alignItems={"center"} flexDir={"row"} justifyContent={"space-between"}>
+                <Flex p="1.5rem" w="18rem" h="100vh" flexDir={"column"} justifyItems={"center"} alignItems={"center"}>
+
+                    <chakra.span>Available Data:</chakra.span>
+                    <Flex flexDir={"column"} >
+                        {appState?.selectedApiData.map((apiData, index) => {
+                            return (
+                                <Flex key={apiData.identification} cursor={"pointer"} onClick={(e) => setCurrent(index)} bgColor={index === current ? "green" : "initial"} justifyContent={"center"} alignItems={"center"} h="8rem" w="100%" borderBottom={index === appState.selectedApiData.length - 1 ? "" : "solid 2px black"} borderLeft="solid 3px black">
+                                    <chakra.span fontWeight={"bold"} textAlign={"center"} >
+                                        {apiData.description}
+                                    </chakra.span>
+                                    {/* TODO: Add a check mark for whichever has been filled */}
+                                </Flex>
+                            );
+                        })}
+                    </Flex>
                 </Flex>
-            </Flex>
-            <Flex
-                flexDir="column"
-                w="100vw"
-                h="100vh"
-                rowGap={"1rem"}
-                alignItems={"center"}
-                paddingTop="1rem"
-                px="2.5rem"
-            >
-                {/* {appState?.selectedApiData.map((apiData, index) => {
+                <Flex
+                    flexDir="column"
+                    w="100vw"
+                    h="100vh"
+                    rowGap={"1rem"}
+                    alignItems={"center"}
+                    paddingTop="1rem"
+                    px="2.5rem"
+                >
+                    {/* {appState?.selectedApiData.map((apiData, index) => {
                 return ( */}
-                <ApiPathComponent
-                    key={currentApiData.identification}
-                    data={currentApiData}
-                    handleChange={handleMetadataChange}
-                    labelFromTime="From Date"
-                    labelToTime="To Date"
-                    labelFrequency={fromFreqGetString(currentApiData.frequency)}
-                    labelAnalyticsType={fromAnalyticsDataTypeGetString(currentApiData.analyticsDataType)}
-                    index={current}
-                />
-                <Flex w="32rem" justifyContent={"space-between"}>
-                    <Button aria-label="previous" leftIcon={<ArrowBackIcon />} onClick={() => setCurrent(prev => {
-                        if (prev === 0) {
-                            return appState.selectedApiData.length - 1
-                        }
-                        return prev - 1
-                        // return (current - 1)%appState.selectedApiData.length
+                    <ApiPathComponent
+                        key={currentApiData.identification}
+                        data={currentApiData}
+                        handleChange={handleMetadataChange}
+                        labelFromTime="From Date"
+                        labelToTime="To Date"
+                        labelFrequency={fromFreqGetString(currentApiData.frequency)}
+                        labelAnalyticsType={fromAnalyticsDataTypeGetString(currentApiData.analyticsDataType)}
+                        index={current}
+                    />
+                    <Flex w="32rem" justifyContent={"space-between"}>
+                        <Button aria-label="previous" leftIcon={<ArrowBackIcon />} onClick={() => setCurrent(prev => {
+                            if (prev === 0) {
+                                return appState.selectedApiData.length - 1
+                            }
+                            return prev - 1
+                            // return (current - 1)%appState.selectedApiData.length
 
-                    })}>Previous</Button>
-                    <Button aria-label="next" rightIcon={<ArrowForwardIcon />} onClick={() => setCurrent(prev => (prev + 1) % appState.selectedApiData.length)}>Next</Button>
-                </Flex>
+                        })}>Previous</Button>
+                        <Button aria-label="next" rightIcon={<ArrowForwardIcon />} onClick={() => setCurrent(prev => (prev + 1) % appState.selectedApiData.length)}>Next</Button>
+                    </Flex>
 
 
-                {/* );
+                    {/* );
             })} */}
-                <Button w="35%" onClick={(e) => handleSubmit()}>
-                    Submit
-                </Button>
+                    <Button w="35%" onClick={(e) => handleSubmit()}>
+                        Submit
+                    </Button>
+                </Flex>
             </Flex>
         </Flex>
     );
